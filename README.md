@@ -2,6 +2,14 @@
 
 Map cycle infrastructure descriptions to theLIST Tasmania transport network.
 
+There is a Parquet cache of the statewide Tasmania street arcs cached as a release artefact (a high quality network of cleanly noded linestrings).
+
+https://github.com/mdsumner/splh.transport/releases/
+
+This is accessed via a Shiny qpp to pick individual elements for arbitrary grouping, can use a tiny atreet name syntax t
+start a search based on between intersection definitions. 
+
+
 ## Quick start
 
 ```r
