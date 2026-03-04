@@ -6,8 +6,8 @@ There is a Parquet cache of the statewide Tasmania street arcs cached as a relea
 
 https://github.com/mdsumner/splh.transport/releases/
 
-This is accessed via a Shiny qpp to pick individual elements for arbitrary grouping, can use a tiny street name synrax to
-start or explore a search based on between-intersection definitions. 
+This is accessed via a Shiny app to pick individual elements for arbitrary grouping, can use a tiny street name synrax to
+start or explore a search based on between-intersection definitions. (Will run out of any interactive R instance just source or paste in the code from app.R, needs a few CRAN packages). I have it running off a VM somewhere too but not suitable for sharing atm. If we crowd source the groupings they can be easily merged, they just record the existing spatial elements deterministically iirc.
 
 "app.R" hardcodes a centre point `c(-42.88, 147.33)' and the radius is buried in there somewhere ... all modifiable, hmu if you're interested - in Hobart we want mapping elements to use for recording information about accessibility and quality of infrastructure. 
 
