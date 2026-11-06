@@ -12,6 +12,11 @@ data, and using the tools we already have where they fit.
    data and the cycle mapper app could plug in.
    Output: [docs/01-ua-stack.md](docs/01-ua-stack.md)
 
+1b. **Cycle mapper to a static Quarto site** - review done, port not started.
+   Review and approach: [docs/cycle-mapper-review.md](docs/cycle-mapper-review.md).
+   Network cache moves into thelist-opendata on S3; the mapper becomes a
+   Quarto OJS page on GitHub Pages alongside the other resources.
+
 2. **Run Hobart through it** - not started.
    Inventory local data (theLIST transport and cadastre, OSM, Metro Tasmania
    GTFS, ABS census and SEIFA, population grids, elevation) and attempt a
@@ -28,6 +33,10 @@ data, and using the tools we already have where they fit.
 4. **Shortlist 2 to 3 proposals** - not started.
    Each with a concrete first step, ready to take to the UA maintainers.
    Output: `docs/04-proposals.md`
+
+## Conventions
+
+- Publishing uses Quarto (website on GitHub Pages).
 
 ## Open decisions
 
