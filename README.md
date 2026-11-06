@@ -1,56 +1,39 @@
-# Cycle Infrastructure Segment Mapper
+# city.infra
 
-Map cycle infrastructure descriptions to theLIST Tasmania transport network.
+Working repo for applying open urban-analysis tooling to Hobart, Tasmania,
+with an eye to contributions that have the most positive social impact in
+collaboration with the [UrbanAnalyst](https://github.com/UrbanAnalyst) (UA)
+project.
 
-There is a Parquet cache of the statewide Tasmania street arcs cached as a release artefact (a high quality network of cleanly noded linestrings).
+The questions driving this:
 
-https://github.com/mdsumner/splh.transport/releases/
+- Where can existing tools (hypertidy and related packages) close real gaps in
+  the UA stack, by framing, by wiring, or by new development?
+- What does it take to run a UA-style analysis on Hobart using authoritative
+  local data (theLIST) alongside the global sources UA relies on?
+- How do locally curated descriptions of infrastructure (accessibility,
+  quality, lived experience) feed into network analysis?
 
-This is accessed via a Shiny app to pick individual elements for arbitrary grouping, can use a tiny street name syntax to
-start or explore a search based on between-intersection definitions.
+See [PLAN.md](PLAN.md) for the current plan and status.
 
-(Will run out of any interactive R instance just source or paste in the code from app.R, needs a few CRAN packages). I have it running off a VM somewhere too but not suitable for sharing atm. If we crowd source the groupings they can be easily merged, they just record the existing spatial elements deterministically iirc.
+## Layout
 
-"app.R" hardcodes a centre point `c(-42.88, 147.33)' and the radius is buried in there somewhere ... all modifiable, hmu if you're interested - in Hobart we want mapping elements to use for recording information about accessibility and quality of infrastructure. 
+| Path | What it holds |
+|------|---------------|
+| `PLAN.md` | The working plan, steps and status |
+| `docs/` | Write-ups produced by each plan step |
+| `apps/cycle_mapper/` | Shiny app for selecting and grouping theLIST network segments |
+| `notes/` | Parked material: links, ideas, meeting notes, loose ends |
 
-## Quick start
+## Related tools
 
-```r
-install.packages(c("shiny", "leaflet", "dplyr", "wk", "arrow", "DT", "PROJ"))
-shiny::runApp("cycle_mapper")
-```
-
-## Search syntax
-
-- `Argyle` - finds all segments with "Argyle" in name
-- `Argyle [Federal, Burnett]` - Argyle between Federal and Burnett intersections
-- `Macquarie [Darcy, Elboden], Weld, Anglesea [Adelaide, Macquarie]` - multi-segment route
-
-Comma separates route parts. Each part can be a whole street or a bounded section.
-
-## Workflow
-
-1. **Search** - enter street name (with optional cross-street bounds)
-2. **Select** - click linestrings on map (green = selected)
-3. **Save** - give it an ID and description (auto-saves to `cycle_mappings.csv`)
-4. **Progress tab** - see all saved mappings on a map
-
-## Output format
-
-`cycle_mappings.csv`:
-```
-id,description,transeg_id
-CP001,"Argyle St bike lane",12345
-CP001,"Argyle St bike lane",12346
-```
-
-## Features
-
-- Segments ordered spatially (walk the network)
-- Cross-street filtering to find specific sections
-- Multi-segment route definitions
-- Context segments shown (3 either side of bounded section)
-- Auto-save/load - persists between sessions
-- Progress map showing all saved mappings
-
-The code is specific to the Tasmania spatial data layer, some remapping of names of fields would be needed at least in order to use a different network.
+- [wkpool](https://github.com/hypertidy/wkpool): vertex pool topology for
+  wk geometry (segments, shared vertices, cycles, neighbours)
+- [cdtr](https://github.com/hypertidy/cdtr): constrained Delaunay
+  triangulation with refinement
+- [traipse](https://github.com/AustralianAntarcticDivision/traipse): geodesic
+  track metrics (distance, bearing, turn, speed, interpolation)
+- [thelist-opendata](https://github.com/hypertidy/thelist-opendata):
+  cloud-native mirror of LIST open data, Tasmania
+- [splh.transport releases](https://github.com/mdsumner/splh.transport/releases/):
+  Parquet cache of statewide Tasmania transport segments used by the app
