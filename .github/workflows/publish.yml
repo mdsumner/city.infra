@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 22
       - name: Test mapper core
-        run: node --test site/mapper/test/*.test.mjs*.test.mjs
+        run: node --test site/mapper/test/*.test.mjs
       - uses: quarto-dev/quarto-actions/setup@v2
         with:
           version: 1.6.42
