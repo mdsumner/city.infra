@@ -6,7 +6,7 @@ data, and using the tools we already have where they fit.
 
 ## Steps
 
-1. **Map the UA stack** - in progress.
+1. **Map the UA stack** - first draft done.
    What each active UA repo does, what it takes in and gives out, where the
    R / C++ / Rust boundaries sit, and where wkpool, cdtr, traipse, theLIST
    data and the cycle mapper app could plug in.
@@ -16,6 +16,8 @@ data, and using the tools we already have where they fit.
    Review and approach: [docs/cycle-mapper-review.md](docs/cycle-mapper-review.md).
    Network cache moves into thelist-opendata on S3; the mapper becomes a
    Quarto OJS page on GitHub Pages alongside the other resources.
+   Data needs from thelist-opendata (derived web layer, snapshot ids, stale
+   boundary cleanup): https://github.com/hypertidy/thelist-opendata/issues/2
 
 2. **Run Hobart through it** - not started.
    Inventory local data (theLIST transport and cadastre, OSM, Metro Tasmania
