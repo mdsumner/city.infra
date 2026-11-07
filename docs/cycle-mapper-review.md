@@ -48,10 +48,10 @@ per-LGA GeoParquet plus a per-product union to `DEST` (for example
    network can be drawn at any zoom with MapLibre and clicked by id.
 4. The bucket needs CORS enabled for the Pages origin.
 
-**CRS mismatch to check:** the app reprojects from `EPSG:7855` (GDA2020 MGA55),
-but the LIST manifest reports `EPSG:28355` (GDA94 MGA55) almost everywhere.
-The difference is about 1.5 m, so it doesn't matter for display, but it matters
-when joining to other layers. *(to verify which CRS the cache really uses)*
+**CRS (resolved):** the cache recipe (`splh.transport/data-raw/transport-segments.R`)
+does no reprojection, so the cache is native EPSG:28355 (GDA94 / MGA55). The
+app assumed EPSG:7855 (GDA2020), which shifted display by about 1.5 m; it now
+uses 28355. See [data/README.md](../data/README.md).
 
 ## 3. Review of the current R app
 

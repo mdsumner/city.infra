@@ -23,6 +23,7 @@ See [PLAN.md](PLAN.md) for the current plan and status.
 | `PLAN.md` | The working plan, steps and status |
 | `docs/` | Write-ups produced by each plan step |
 | `apps/cycle_mapper/` | Shiny app for selecting and grouping theLIST network segments |
+| `data/` | Provenance of data the apps and docs use |
 | `notes/` | Parked material: links, ideas, meeting notes, loose ends |
 
 ## Related tools

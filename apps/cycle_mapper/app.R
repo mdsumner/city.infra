@@ -76,7 +76,7 @@ load_network <- function(url = NETWORK_URL) {
   } else {
     message("Data needs reprojection - using PROJ")
     ll <- PROJ::proj_trans(cbind(segments$cx, segments$cy), 
-                           source = "EPSG:7855", target = "EPSG:4326")
+                           source = "EPSG:28355", target = "EPSG:4326")
     segments$clng <- ll[, 1]
     segments$clat <- ll[, 2]
   }
@@ -86,7 +86,7 @@ load_network <- function(url = NETWORK_URL) {
 }
 
 # Convert a wkb geometry to lon/lat coordinate list for leaflet
-geom_to_lonlat <- function(geom_wkb, from_crs = "EPSG:7855") {
+geom_to_lonlat <- function(geom_wkb, from_crs = "EPSG:28355") {
   coords <- wk::wk_coords(geom_wkb)
   
   # Check if reprojection needed
