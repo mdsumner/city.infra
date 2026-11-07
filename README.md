@@ -22,7 +22,9 @@ See [PLAN.md](PLAN.md) for the current plan and status.
 |------|---------------|
 | `PLAN.md` | The working plan, steps and status |
 | `docs/` | Write-ups produced by each plan step |
-| `apps/cycle_mapper/` | Shiny app for selecting and grouping theLIST network segments |
+| `index.qmd`, `mapper.qmd`, `_quarto.yml` | Quarto website, published to GitHub Pages |
+| `site/mapper/` | Browser segment mapper (JS): `core.js` logic with tests, `app.js` UI |
+| `apps/cycle_mapper/` | Original Shiny app for selecting and grouping theLIST network segments |
 | `data/` | Provenance of data the apps and docs use |
 | `notes/` | Parked material: links, ideas, meeting notes, loose ends |
 
@@ -38,3 +40,10 @@ See [PLAN.md](PLAN.md) for the current plan and status.
   cloud-native mirror of LIST open data, Tasmania
 - [splh.transport releases](https://github.com/mdsumner/splh.transport/releases/):
   Parquet cache of statewide Tasmania transport segments used by the app
+
+## Website
+
+The site is a Quarto project. Render locally with `quarto render` (output in
+`_site/`); `.github/workflows/publish.yml` tests the mapper logic
+(`node --test site/mapper/test/*.test.mjs`) and publishes to GitHub Pages on every push
+to `main`.
