@@ -19,12 +19,14 @@ data, and using the tools we already have where they fit.
    Data needs from thelist-opendata (derived web layer, snapshot ids, stale
    boundary cleanup): https://github.com/hypertidy/thelist-opendata/issues/2
 
-2. **Run Hobart through it** - not started.
+2. **Run Hobart through it** - first run done: walk + public transport
+   time to the Royal Hobart Hospital for every address, with a friction log.
+   Output: [docs/02-hobart-pipeline.md](docs/02-hobart-pipeline.md),
+   scripts in `scripts/02-hobart/`. Original scope:
    Inventory local data (theLIST transport and cadastre, OSM, Metro Tasmania
    GTFS, ABS census and SEIFA, population grids, elevation) and attempt a
    minimal end-to-end pipeline (dodgr / m4ra to an access result), logging
    every point of friction.
-   Output: `docs/02-hobart-pipeline.md` plus scripts.
 
 3. **Match tools to gaps** - not started.
    Position the cycle mapper alongside UA `neighbourhoods` and `superblock`,
