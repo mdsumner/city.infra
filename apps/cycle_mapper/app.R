@@ -478,7 +478,7 @@ ui <- fluidPage(
       h4("1. Search"),
       checkboxInput("hobart_only", "Hobart area only (10km)", value = TRUE),
       textInput("street_name", "Street name / route:", placeholder = "Argyle [Federal, Burnett], Weld"),
-      helpText("[A, B] bounds section • [A,] from A to end • comma separates route parts"),
+      helpText("[A, B] bounds section \u2022 [A,] from A to end \u2022 comma separates route parts"),
       checkboxInput("show_context", "Show context segments", value = TRUE),
       fluidRow(
         column(6, numericInput("anchor_lat", "Lat:", value = NA, step = 0.0001)),
@@ -798,7 +798,7 @@ server <- function(input, output, session) {
               opacity = STYLE$selected$opacity,
               group = "selected",
               layerId = paste0("sel_", id_str),
-              popup = sprintf("<b>#%d %s</b><br>ID: %s<br>Length: %.0fm<br><b>✓ SELECTED</b>", 
+              popup = sprintf("<b>#%d %s</b><br>ID: %s<br>Length: %.0fm<br><b>\u2713 SELECTED</b>", 
                              seq_num, cands$PRI_NAME[i], id_str, cands$COMP_LEN[i])
             )
         }
