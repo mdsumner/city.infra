@@ -25,6 +25,7 @@ See [PLAN.md](PLAN.md) for the current plan and status.
 | `index.qmd`, `mapper.qmd`, `_quarto.yml` | Quarto website, published to GitHub Pages |
 | `site/mapper/` | Browser segment mapper (JS): `core.js` logic with tests, `app.js` UI |
 | `apps/cycle_mapper/` | Original Shiny app for selecting and grouping theLIST network segments |
+| `scripts/` | Analysis scripts, one folder per plan step (`02-hobart/`: access run) |
 | `data/` | Provenance of data the apps and docs use |
 | `notes/` | Parked material: links, ideas, meeting notes, loose ends |
 

@@ -12,6 +12,7 @@ project:
     - site/mapper/core.js
     - site/mapper/app.js
     - site/mapper/mapper.css
+    - docs/02-hobart/*.csv
 
 website:
   title: "city.infra"
@@ -30,6 +31,8 @@ website:
             text: Plan
           - href: docs/01-ua-stack.md
             text: UrbanAnalyst stack
+          - href: docs/02-hobart-pipeline.md
+            text: Hobart access run
           - href: docs/cycle-mapper-review.md
             text: Mapper review
           - href: data/README.md
