@@ -161,10 +161,19 @@ let map, candLayer, savedLayer;
 
 function initMap() {
   map = L.map("sm-map", { preferCanvas: false }).setView([-42.88, 147.33], 14);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 20, subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  }).addTo(map);
+  // LISTmap basemaps (Land Tasmania ArcGIS cached tile services, no key),
+  // with OpenStreetMap as a fallback.
+  const LIST = "https://services.thelist.tas.gov.au/arcgis/rest/services/Basemaps/";
+  const listAttr = 'Basemap &copy; State of Tasmania (<a href="https://www.thelist.tas.gov.au">theLIST</a>)';
+  const base = {
+    "LIST Topographic": L.tileLayer(LIST + "Topographic/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 18, attribution: listAttr }),
+    "LIST Orthophoto": L.tileLayer(LIST + "Orthophoto/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19, attribution: listAttr }),
+    "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }),
+  };
+  base["LIST Topographic"].addTo(map);
+  L.control.layers(base, null, { position: "topright" }).addTo(map);
   savedLayer = L.layerGroup().addTo(map);
   candLayer = L.layerGroup().addTo(map);
   map.attributionControl.addAttribution('Network: "LIST Transport Segments" from theLIST &copy; State of Tasmania');
