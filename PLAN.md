@@ -28,6 +28,11 @@ data, and using the tools we already have where they fit.
    minimal end-to-end pipeline (dodgr / m4ra to an access result), logging
    every point of friction.
 
+2b. **Robust GTFS feed** - plan drafted, nothing set up yet.
+   Scheduled fetch, dated snapshots, validation and an archive in
+   source.coop `tas-transport-web/gtfs/`, so access results are reproducible.
+   Output: [docs/gtfs-feed-plan.md](docs/gtfs-feed-plan.md)
+
 3. **Match tools to gaps** - not started.
    Position the cycle mapper alongside UA `neighbourhoods` and `superblock`,
    and sort all candidate contributions into framing, wiring and new

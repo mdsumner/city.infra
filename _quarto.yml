@@ -35,6 +35,8 @@ website:
             text: Hobart access run
           - href: docs/cycle-mapper-review.md
             text: Mapper review
+          - href: docs/gtfs-feed-plan.md
+            text: GTFS feed plan
           - href: data/README.md
             text: Data provenance
           - href: notes/thelist-opendata-status.md
