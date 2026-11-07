@@ -1,4 +1,4 @@
-// Run with: node --test site/mapper/test/
+// Run with: node --test site/mapper/test/*.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

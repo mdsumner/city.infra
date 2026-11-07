@@ -45,5 +45,5 @@ See [PLAN.md](PLAN.md) for the current plan and status.
 
 The site is a Quarto project. Render locally with `quarto render` (output in
 `_site/`); `.github/workflows/publish.yml` tests the mapper logic
-(`node --test site/mapper/test/`) and publishes to GitHub Pages on every push
+(`node --test site/mapper/test/*.test.mjs`) and publishes to GitHub Pages on every push
 to `main`.
