@@ -1,0 +1,48 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - mapper.qmd
+    - PLAN.md
+    - docs/*.md
+    - data/README.md
+    - notes/thelist-opendata-status.md
+  resources:
+    - site/mapper/core.js
+    - site/mapper/app.js
+    - site/mapper/mapper.css
+
+website:
+  title: "city.infra"
+  description: "Open urban network tools and data for Hobart, Tasmania"
+  repo-url: https://github.com/mdsumner/city.infra
+  repo-actions: [source, issue]
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: mapper.qmd
+        text: Segment mapper
+      - text: Notes
+        menu:
+          - href: PLAN.md
+            text: Plan
+          - href: docs/01-ua-stack.md
+            text: UrbanAnalyst stack
+          - href: docs/cycle-mapper-review.md
+            text: Mapper review
+          - href: data/README.md
+            text: Data provenance
+          - href: notes/thelist-opendata-status.md
+            text: theLIST mirror status
+  page-footer:
+    left: 'Network data: "LIST Transport Segments" from theLIST &copy; State of Tasmania (CC BY 3.0 AU).'
+    right: "Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    toc: true

@@ -12,7 +12,7 @@ data, and using the tools we already have where they fit.
    data and the cycle mapper app could plug in.
    Output: [docs/01-ua-stack.md](docs/01-ua-stack.md)
 
-1b. **Cycle mapper to a static Quarto site** - review done, port not started.
+1b. **Cycle mapper to a static Quarto site** - first version built (`mapper.qmd`).
    Review and approach: [docs/cycle-mapper-review.md](docs/cycle-mapper-review.md).
    Network cache moves into thelist-opendata on S3; the mapper becomes a
    Quarto OJS page on GitHub Pages alongside the other resources.

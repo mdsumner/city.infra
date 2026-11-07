@@ -1,0 +1,36 @@
+---
+title: "city.infra"
+subtitle: "Open network tools and data for Hobart, Tasmania"
+toc: false
+---
+
+A working space for applying open urban-analysis tooling to Hobart, with an
+eye to contributions that have the most positive social impact, in
+collaboration with the [UrbanAnalyst](https://github.com/UrbanAnalyst) project.
+
+## Tools
+
+[**Segment mapper**](mapper.qmd)
+: Find street sections by name and cross street (`Argyle [Federal, Burnett]`),
+  select network segments on the map, and save them as named groupings that
+  describe the quality, accessibility or experience of local infrastructure.
+  Runs entirely in the browser; groupings stay on your device until you export
+  them as CSV.
+
+## Data
+
+- [tas-transport-web](https://source.coop/mdsumner/tas-transport-web): the
+  statewide LIST transport network as web-ready GeoParquet and PMTiles
+  (EPSG:4326, endpoint node ids, dated snapshots).
+- [thelist-opendata](https://source.coop/mdsumner/thelist-opendata): a
+  cloud-native mirror of every LIST open data product, as GeoParquet and COG
+  ([code](https://github.com/hypertidy/thelist-opendata)).
+
+See [data provenance](data/README.md) for how each is built.
+
+## Notes
+
+- [Plan](PLAN.md)
+- [The UrbanAnalyst stack, and where these tools plug in](docs/01-ua-stack.md)
+- [Review of the original Shiny mapper](docs/cycle-mapper-review.md)
+- [Status of the theLIST mirror](notes/thelist-opendata-status.md)

@@ -1,0 +1,65 @@
+---
+title: "Segment mapper"
+page-layout: full
+toc: false
+include-in-header:
+  text: |
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="site/mapper/mapper.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+---
+
+```{=html}
+<div class="sm-app">
+  <div class="sm-side">
+    <h2 class="h6">1. Search</h2>
+    <label for="sm-query" class="form-label small">Street or route</label>
+    <input id="sm-query" class="form-control form-control-sm" placeholder="Argyle [Federal, Burnett], Weld">
+    <p class="small text-muted mt-1 mb-2"><code>[A, B]</code> between intersections,
+      <code>[A,]</code> from A to the end, commas separate route parts.</p>
+    <label for="sm-area" class="form-label small">Area</label>
+    <select id="sm-area" class="form-select form-select-sm mb-2">
+      <option value="hobart" selected>Greater Hobart</option>
+      <option value="view">Current map view</option>
+      <option value="state">All Tasmania</option>
+    </select>
+    <div class="form-check small mb-2">
+      <input class="form-check-input" type="checkbox" id="sm-context" checked>
+      <label class="form-check-label" for="sm-context">Show context segments</label>
+    </div>
+    <button id="sm-search" class="btn btn-primary btn-sm">Search</button>
+
+    <h2 class="h6 mt-3">2. Select</h2>
+    <p class="small mb-1">Click segments on the map or in the table.</p>
+    <div id="sm-selection" class="small mb-1">None selected</div>
+    <button id="sm-all" class="btn btn-outline-secondary btn-sm">Select all in range</button>
+    <button id="sm-clear" class="btn btn-outline-secondary btn-sm">Clear</button>
+
+    <h2 class="h6 mt-3">3. Save</h2>
+    <label for="sm-id" class="form-label small">Grouping ID</label>
+    <input id="sm-id" class="form-control form-control-sm mb-1" placeholder="CP001">
+    <label for="sm-desc" class="form-label small">Description</label>
+    <textarea id="sm-desc" class="form-control form-control-sm mb-1" rows="2" placeholder="Argyle St bike lane, northbound"></textarea>
+    <button id="sm-save" class="btn btn-success btn-sm" disabled>Save</button>
+
+    <h2 class="h6 mt-3">Saved groupings</h2>
+    <div class="form-check small">
+      <input class="form-check-input" type="checkbox" id="sm-show-saved">
+      <label class="form-check-label" for="sm-show-saved">Show saved on map</label>
+    </div>
+    <ul id="sm-saved" class="sm-saved small"></ul>
+    <button id="sm-export" class="btn btn-outline-secondary btn-sm">Export CSV</button>
+    <label class="btn btn-outline-secondary btn-sm mb-0">Import CSV
+      <input id="sm-import" type="file" accept=".csv,text/csv" hidden>
+    </label>
+    <p class="small text-muted mt-3">Network snapshot <span id="sm-snapshot">...</span>.
+      Groupings are kept in this browser only; export to share them.</p>
+  </div>
+  <div class="sm-main">
+    <div id="sm-status" class="sm-status small" role="status" aria-live="polite"></div>
+    <div id="sm-map" class="sm-map"></div>
+    <div id="sm-table" class="sm-table small"></div>
+  </div>
+</div>
+<script type="module" src="site/mapper/app.js"></script>
+```

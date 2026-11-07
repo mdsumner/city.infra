@@ -1,6 +1,16 @@
 # Data used by city.infra
 
-## Transport segments network cache
+## Web layer used by the segment mapper
+
+The browser mapper (`mapper.qmd`, `site/mapper/`) reads
+[tas-transport-web](https://source.coop/mdsumner/tas-transport-web):
+`latest.json` names the current dated snapshot, which holds
+`list_transport_segments.parquet` (EPSG:4326, one row per `TRANSEG_ID`,
+`node0`/`node1` endpoint node ids, `snapshot` column, GeoParquet 1.1 bbox
+covering), a PMTiles copy, and `snapshot.json` recording the source zip etags.
+Saved groupings record the snapshot they were made on.
+
+## Transport segments network cache (Shiny app, interim)
 
 | | |
 |---|---|

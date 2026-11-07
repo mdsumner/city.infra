@@ -1,0 +1,20 @@
+.sm-app { display: grid; grid-template-columns: minmax(240px, 300px) 1fr; gap: 1rem; }
+.sm-side { font-size: 0.9rem; }
+.sm-side .btn { margin: 0.1rem 0.1rem 0.1rem 0; }
+.sm-main { min-width: 0; }
+.sm-map { height: 62vh; min-height: 360px; border-radius: 6px; }
+.sm-table { max-height: 30vh; overflow: auto; margin-top: 0.5rem; }
+.sm-table .sm-ctx { opacity: 0.6; }
+.sm-num { text-align: right; }
+.sm-status { min-height: 1.6em; padding: 0.2rem 0; }
+.sm-status[data-kind="warn"] { color: #a35a00; }
+.sm-status[data-kind="error"] { color: #b00020; }
+.sm-saved { list-style: none; padding-left: 0; margin: 0.3rem 0; }
+.sm-saved li { margin-bottom: 0.4rem; }
+.sm-swatch { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 2px; margin-right: 0.3em; vertical-align: -0.05em; }
+.sm-warn { color: #a35a00; }
+.sm-actions { margin-left: 0.4rem; }
+@media (max-width: 760px) {
+  .sm-app { grid-template-columns: 1fr; }
+  .sm-map { height: 55vh; }
+}
