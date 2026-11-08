@@ -1,19 +1,20 @@
 {
+  "parallel_dropped": 414,
   "edges": 50661,
   "vertices": 44271,
-  "parallel_dropped": 414,
   "euler_V_minus_E_plus_F": -264,
   "genus": 133,
   "network_cycles": 6436,
   "network_cycles_duplicates": 9,
-  "network_cycles_seconds": 20.968,
+  "network_cycles_seconds": 20.936,
   "find_faces_bounded": 6108,
-  "find_faces_seconds": 0.064,
-  "in_both": 5964,
-  "only_network_cycles": 463,
+  "find_faces_seconds": 0.065,
+  "find_faces_with_islands": 68,
+  "in_both": 6013,
+  "only_network_cycles": 414,
   "only_network_cycles_outer": 14,
   "only_network_cycles_union_of_faces": 22,
-  "only_find_faces": 144,
-  "only_find_faces_self_crossing": 101,
-  "find_faces_self_crossing_all": 159
+  "only_find_faces": 95,
+  "only_find_faces_self_crossing": 83,
+  "find_faces_self_crossing_all": 144
 }

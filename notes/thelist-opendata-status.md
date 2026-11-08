@@ -54,3 +54,30 @@ GitHub repo hypertidy/thelist-opendata.
 8. Still EPSG:28355 throughout, by design. The web layer for the mapper will
    be a derived product (EPSG:4326 plus node ids), kept separate from the
    faithful mirror.
+9. **Water crossings are missing from the `tas-transport-web` segment
+   geometry** (found 2026-11-08, web layer snapshot `2025-07-10`). Across
+   the state, 609 segments have at least 50 m less geometry than their
+   official `COMP_LEN`, and 54 are MULTILINESTRINGs whose parts have gaps.
+   In Greater Hobart all three road crossings of the River Derwent are
+   affected:
+
+   | TRANSEG_ID | Road | `COMP_LEN` (m) | geometry (m) | crossing |
+   |---|---|---:|---:|---|
+   | 4298506 | Tasman Highway | 1,264 | 266 | Tasman Bridge |
+   | 4298327, 4298328 | Goodwood Road | 993 | 131, 133 | Bowen Bridge |
+   | 6410527, 6411293 | Midland Highway | 1,283, 1,292 | 971, 976 | Bridgewater |
+
+   Statewide the list includes ferries, the Batman Highway (Batman Bridge)
+   and the Tasman Highway at Sorell. Likely cause *(to verify against the
+   source zips)*: LIST is distributed per LGA, the parts of a segment over
+   water lie in no LGA, and they are lost when the per-LGA files are
+   combined; the `lga` column then lists only the land LGAs (the Tasman
+   Bridge segment is tagged `clarence` only). Effects: on the full geometry
+   the Greater Hobart network splits into eastern and western shores; graphs
+   built from end-node ids join the gaps with straight edges but the Tasman
+   Bridge edge does not reach the Hobart side
+   ([docs/02-hobart-pipeline.md](../docs/02-hobart-pipeline.md), friction
+   point 9; [docs/wkpool-neighbourhoods.md](../docs/wkpool-neighbourhoods.md)).
+   Fix in the web-layer build: take each `TRANSEG_ID`'s full geometry once
+   from the statewide source rather than combining per-LGA clips, and add a
+   check of geometry length against `COMP_LEN`.

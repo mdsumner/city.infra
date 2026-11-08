@@ -263,7 +263,19 @@ Ordered by how much each one matters for UA work beyond Hobart.
    non-boarding stops and keeps one virtual edge per vertex, the fastest.
    Worth reporting upstream: either take the minimum of parallel edges or
    warn.
-9. **Smaller things.**
+9. **River crossings missing from the network layer.** Found 2026-11-08
+   while comparing face finding on the full geometry: the over-water parts
+   of the Tasman, Bowen and Bridgewater crossings are missing from the
+   `tas-transport-web` segment geometry (details in
+   [theLIST mirror status](../notes/thelist-opendata-status.md), loose end 9).
+   This run builds its walk graph from end-node ids with official lengths,
+   so the Bowen and Bridgewater crossings survive as straight edges, but the
+   Tasman Bridge segment's remaining geometry, and so its end nodes, stop
+   short of the Hobart side, so walking across the Tasman Bridge is likely
+   not possible in these results *(effect not yet measured)*. Buses still
+   cross, since public transport comes from GTFS; walk-only times from the
+   eastern shore are the most affected.
+10. **Smaller things.**
    - dodgr hard-imports osmdata, so a non-OSM user still installs the OSM
      stack. m4ra needs RcppThread at build time.
    - R in this sandbox had no Parquet reader (no arrow or nanoparquet, and

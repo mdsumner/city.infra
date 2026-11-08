@@ -1,0 +1,22 @@
+{
+  "input": "full LIST geometry",
+  "components_before": 45,
+  "parallel_dropped": 44,
+  "edges": 261842,
+  "vertices": 257717,
+  "euler_V_minus_E_plus_F": -72,
+  "genus": 37,
+  "network_cycles": 4138,
+  "network_cycles_duplicates": 0,
+  "network_cycles_seconds": 1870.309,
+  "find_faces_bounded": 4051,
+  "find_faces_seconds": 0.418,
+  "find_faces_with_islands": 97,
+  "in_both": 4022,
+  "only_network_cycles": 116,
+  "only_network_cycles_outer": 1,
+  "only_network_cycles_union_of_faces": 14,
+  "only_find_faces": 29,
+  "only_find_faces_self_crossing": 29,
+  "find_faces_self_crossing_all": 31
+}
