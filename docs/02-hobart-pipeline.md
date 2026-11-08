@@ -36,6 +36,10 @@ The whole run takes about 30 seconds on 4 cores.
 
 ## Results
 
+These are the first-run figures. They are slightly affected by a bug found
+later (friction point 8); corrected August figures and a comparison with
+November are in the next section.
+
 ![Walk + public transport time to the Royal Hobart Hospital](02-hobart/rhh-access-map.png)
 
 Share of addresses that can reach the hospital within a given time
@@ -83,20 +87,34 @@ boarding stop to the hospital door. Outputs:
 
 ![Walk + public transport to the Royal Hobart Hospital, 17 November 2026](02-hobart/2026-11-17-v25/rhh-access-map.png)
 
-| LGA | Addresses | Walk + PT, 30 min | 45 min | 60 min | Median (min) | August median |
+| LGA | Aug, first run | Aug, corrected | Nov | Aug corrected, 60 min | Nov, 45 min | Nov, 60 min |
 |---|---:|---:|---:|---:|---:|---:|
-| Hobart | 27,844 | 91.2 | 99.5 | 99.9 | 18 | 18 |
-| Glenorchy | 24,379 | 30.8 | 84.0 | 97.4 | 35 | 36 |
-| Clarence | 30,514 | 37.7 | 70.7 | 90.0 | 37 | 38 |
-| Kingborough | 17,566 | 1.4 | 47.0 | 78.6 | 46 | 46 |
-| Brighton | 9,004 | 0 | 13.5 | 48.1 | 60 | 61 |
-| All five | 109,357 | 40.8 | 72.5 | 88.9 | 35 | 36 |
+| Hobart | 18 | 18 | 18 | 99.9 | 99.5 | 99.9 |
+| Glenorchy | 36 | 36 | 35 | 97.4 | 84.0 | 97.4 |
+| Clarence | 38 | 37 | 37 | 90.0 | 70.7 | 90.0 |
+| Kingborough | 46 | 45 | 46 | 78.5 | 47.0 | 78.6 |
+| Brighton | 61 | 60 | 60 | 48.1 | 13.5 | 48.1 |
+| All five | 36 | 35 | 35 | 88.9 | 72.5 | 88.9 |
 
-The November timetable gives much the same picture as August: Brighton is
-still the outlier, with under half of addresses within an hour. Most
-suburbs move by a minute or less, and part of that is the fix below
-(friction point 8), not the timetable. The August run cannot be redone with
-the fix until its feed (version 20) is in the archive.
+Medians in minutes; the last three columns are percent of addresses.
+"First run" is the August result above, before the parallel-edge fix
+(friction point 8). "Corrected" reruns the same feed (version 20, now
+backfilled as `tas-statewide/2026-06-20`) and the same day, Tuesday
+2026-08-04, with the fix: [02-hobart/2026-08-04-v20/](02-hobart/2026-08-04-v20/).
+
+Two findings:
+
+- **The timetable change from August to November barely moves access.**
+  With the fix applied to both runs, only 6 of the 70 suburbs with at least
+  200 addresses change their median, each by 1 or 2 minutes (Claremont 41 to
+  39, Berriedale, Chigwell, Howden and Kingston 1 minute, Huntingfield 34 to
+  35). Brighton is still the outlier, with under half of addresses within an
+  hour.
+- **The bug mattered more than the timetable.** The fix changes 21 of the
+  70 suburbs in the August run, mostly by a minute; the largest are Howden
+  (85 to 79) and Cambridge (41 to 38). The August figures in the Results
+  section above are the first-run numbers and are kept as published; use the
+  corrected ones.
 
 ## Friction log
 
