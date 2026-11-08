@@ -178,8 +178,8 @@ number of faces is known from Euler's formula:
   boundary of the graph. In the other two runs it misses faces: in one, 2
   true faces are replaced by 2 cycles that each outline a group of faces; in
   the other, one face is missing.
-- Time: `network_cycles()` up to 1.1 s on these graphs; `find_faces()` a few
-  milliseconds.
+- Time: `network_cycles()` up to 1.1 s on these graphs (`find_faces()` was
+  not timed here; see Hobart below).
 
 **Greater Hobart, LIST.** The graph `network_cycles()` works on: straight
 edges between LIST node ids (largest component, 50,661 edges, 44,271
@@ -208,8 +208,8 @@ vertices; 414 parallel duplicates and self-loops removed for both).
 What this says for the proposal:
 
 - On planar input `find_faces()` is exact where the current search is
-  usually right but not always, and it is two to three orders of magnitude
-  faster.
+  usually right but not always. On Hobart it is about 300 times faster
+  (0.06 s against about 20 s).
 - The current pipeline finds cycles on the contracted graph, where curved
   roads are straight chords. Faces should be found on the full geometry
   and contracted afterwards (the face of each half-edge carries through
