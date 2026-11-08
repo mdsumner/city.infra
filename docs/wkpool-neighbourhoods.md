@@ -181,47 +181,73 @@ number of faces is known from Euler's formula:
 - Time: `network_cycles()` up to 1.1 s on these graphs (`find_faces()` was
   not timed here; see Hobart below).
 
-**Greater Hobart, LIST.** The graph `network_cycles()` works on: straight
-edges between LIST node ids (largest component, 50,661 edges, 44,271
-vertices; 414 parallel duplicates and self-loops removed for both).
+**Comparing like with like.** A face can have islands inside it: a loop at
+the end of a dead-end road, a roundabout. Its walk goes round the islands'
+outsides too, while `network_cycles()` returns the outer ring only. So each
+`find_faces()` face is split into rings and only its outer ring (positive
+area) is compared. Without this, faces with islands showed up as
+"different" (97 faces on the full geometry).
 
-| | `network_cycles()` | `find_faces()` |
+**Greater Hobart, LIST, two versions of the same network.** Both methods get
+identical input (largest connected component, no self-loops, one edge per
+vertex pair).
+
+- *Node graph*: straight edges between LIST node ids, the form
+  `network_cycles()` is normally given (a contracted graph).
+- *Full geometry*: every vertex of every road line, so edges follow the
+  real road shapes.
+
+| | node graph | full geometry |
 |---|---:|---:|
-| cycles / bounded faces | 6,436 (9 exact duplicates) | 6,108 |
-| time | about 20 s | 0.06 s |
-| found by both | 5,964 | 5,964 |
-| found only by this method | 463 | 144 |
+| edges | 50,661 | 261,842 |
+| genus (crossings without a shared vertex, roughly) | 133 | 37 |
+| `network_cycles()` cycles | 6,436 (9 duplicates) | 4,145 (7 duplicates) |
+| `find_faces()` bounded faces | 6,108 | 4,051 |
+| found by both | 6,013 | 4,022 |
+| only `network_cycles()` | 414 | 116 |
+| of which outer boundary / outline of several faces | 14 / 22 | 1 / 14 |
+| only `find_faces()` | 95 | 29 |
+| of which self-crossing | 83 | 29 |
+| `network_cycles()` time | about 20 s | 31 min |
+| `find_faces()` time | 0.06 s | 0.4 s |
 
-- Of the 463 found only by `network_cycles()`: 14 are the outer boundary of
-  the network and 22 outline a group of `find_faces()` faces (non-minimal
-  cycles); the other 427 are not classified yet.
-- Of the 144 found only by `find_faces()`: 101 are self-crossing outlines.
-  Across all faces, 159 are self-crossing.
-- The cause of most differences is that **this graph is not planar**:
-  Euler's formula gives genus 133. Straight edges between the nodes of
-  curved roads cross where the roads do not, and real overpasses add more.
-  On the full LIST geometry (every vertex, 483,302 edges) the genus falls
-  to 57, about the number of real crossings without a junction, and
-  `find_faces()` takes 0.74 s (bounded faces within 0.15% of GEOS
-  polygonize by area).
+On the full geometry, 4,022 of 4,051 faces
+(99.3%) are found by both, and **every face that
+only `find_faces()` reports is self-crossing**: it lies where roads cross
+without a junction (overpasses), the case that needs a decision either
+way. 101
+of the cycles only `network_cycles()` reports are not classified yet.
+(The full-geometry `network_cycles()` result was rebuilt from the first
+run's saved output to apply the outer-ring comparison, rather than
+rerunning 31 minutes; the duplicate count is from the original run.)
+
+**Caveat: the full geometry covers only the western shore.** Its largest
+component has 261,842 of about 483,000 edges, because the three road
+crossings of the River Derwent are broken in the `tas-transport-web` layer
+(see [theLIST mirror status](../notes/thelist-opendata-status.md)). The node
+graph is connected across the river because straight edges between node
+ids jump the gaps. The comparison is still like for like (both methods get
+the same component).
 
 What this says for the proposal:
 
 - On planar input `find_faces()` is exact where the current search is
-  usually right but not always. On Hobart it is about 300 times faster
-  (0.06 s against about 20 s).
-- The current pipeline finds cycles on the contracted graph, where curved
-  roads are straight chords. Faces should be found on the full geometry
-  and contracted afterwards (the face of each half-edge carries through
-  contraction), which also removes most of the crossing artefacts that
-  any method has to cope with.
-- The remaining 57 or so real crossings in Hobart need a decision (see
-  the questions below).
+  usually right but not always.
+- It is about 300 times faster on the node graph (0.06 s against about
+  20 s) and about 4,500 times faster on the full geometry (0.4 s against 31
+  minutes), where the current search does not scale.
+- Faces should be found on the full geometry and contracted afterwards (the
+  face of each half-edge carries through contraction): the genus falls from
+  133 to 37, so most crossing artefacts disappear, and the cost is trivial
+  with `find_faces()`.
+- The remaining real crossings need a decision (see the questions below).
 
 ## Next steps
 
-- Run `network_cycles()` on the full-geometry Hobart graph as well, and
-  classify the 427 unexplained cycles.
+- Classify the cycles only `network_cycles()` reports (101 on the full
+  geometry), likely near the self-crossing faces.
+- Rerun on the full geometry once the Derwent crossings are repaired in
+  `tas-transport-web`.
 - Draft issues for 1, 1b and 2, each with a minimal example (1b already has
   one in `compare_planar_grids.R`).
 - A small adapter from `find_faces()` output to the `network_cycles()`
