@@ -5,6 +5,7 @@
 #
 # Fetch every feed in sources.csv (weekly job):
 #   Rscript gtfs_snapshot.R --store DIR [--sources sources.csv] [--only ID] [--check]
+#       [--validator gtfs-validator-cli.jar] [--java java]
 #
 # Add a zip you already have (backfill):
 #   Rscript gtfs_snapshot.R --store DIR --file x.zip --source-id ID \
@@ -12,10 +13,11 @@
 #
 # Store layout (mirrors tas-transport-web/gtfs/):
 #   DIR/catalog.csv                      one row per snapshot
-#   DIR/status.json                      newest service_end per feed, days left
+#   DIR/status.json, status.md           per feed: newest service_end, days left,
+#                                        this run's fetch outcome, alert reasons
 #   DIR/<source_id>/latest.json
 #   DIR/<source_id>/fetch_log.csv        every check, including "unchanged"
-#   DIR/<source_id>/<YYYY-MM-DD>/gtfs.zip, snapshot.json
+#   DIR/<source_id>/<YYYY-MM-DD>/gtfs.zip, snapshot.json, validation/
 #
 # A snapshot directory is never written twice. Only latest.json, catalog.csv,
 # status.json and fetch_log.csv are rewritten.
@@ -120,6 +122,31 @@ routing_check <- function (zip, s) {
     res
 }
 
+#' Run the MobilityData GTFS validator (if --validator was given) into
+#' outdir and summarise notice counts by severity.
+validate_gtfs <- function (zip, outdir) {
+    jar <- getOption ("gtfs.validator")
+    if (is.null (jar)) return (NULL)
+    java <- getOption ("gtfs.java", "java")
+    dir.create (outdir, recursive = TRUE, showWarnings = FALSE)
+    log <- suppressWarnings (system2 (java, c ("-jar", shQuote (jar), "-i", shQuote (zip),
+        "-o", shQuote (outdir), "-c", "au"), stdout = TRUE, stderr = TRUE))
+    f <- file.path (outdir, "report.json")
+    if (!file.exists (f)) {
+        return (list (ok = FALSE, error = paste (utils::tail (log, 5), collapse = "\n")))
+    }
+    r <- jsonlite::fromJSON (f)
+    n <- r$notices
+    count <- function (sev) if (length (n) && nrow (n)) as.integer (sum (n$totalNotices [n$severity == sev])) else 0L
+    list (
+        ok = TRUE,
+        validator_version = r$summary$validatorVersion,
+        date_for_validation = r$summary$dateForValidation,
+        n_errors = count ("ERROR"), n_warnings = count ("WARNING"), n_infos = count ("INFO"),
+        notices = if (length (n) && nrow (n)) n [, c ("code", "severity", "totalNotices")] else NULL
+    )
+}
+
 # ---- store ------------------------------------------------------------------
 
 catalog_cols <- c ("source_id", "snapshot", "service_start", "service_end", "feed_version",
@@ -189,7 +216,7 @@ add_snapshot <- function (store, zip, source_id, kind, url, fetched_at = Sys.tim
         feed_info = s$feed_info,
         agencies = s$agencies,
         files = s$files,
-        validation = NULL, # MobilityData validator: not wired up yet
+        validation = validate_gtfs (file.path (snap_dir, "gtfs.zip"), file.path (snap_dir, "validation")),
         routing_check = if (check) routing_check (zip, s) else NULL,
         fetcher_commit = git_commit ()
     )
@@ -200,7 +227,9 @@ add_snapshot <- function (store, zip, source_id, kind, url, fetched_at = Sys.tim
         service_start = s$service_start, service_end = s$service_end,
         feed_version = if (is.null (s$feed_info$feed_version)) NA_character_ else s$feed_info$feed_version,
         content_sha256 = s$content_sha256, source_kind = kind, source_url = url,
-        fetched_at = meta$fetched_at, n_errors = NA_character_, n_warnings = NA_character_
+        fetched_at = meta$fetched_at,
+        n_errors = as.character (if (isTRUE (meta$validation$ok)) meta$validation$n_errors else NA),
+        n_warnings = as.character (if (isTRUE (meta$validation$ok)) meta$validation$n_warnings else NA)
     )
     cat_dt <- rbind (cat_dt, row, fill = TRUE)
     setorder (cat_dt, source_id, snapshot)
@@ -295,6 +324,7 @@ resolve_url <- function (url, resolve) {
 fetch_source <- function (store, src, check = FALSE) {
     src <- src [order (as.integer (priority))]
     sid <- src$source_id [1]
+    attempts <- list ()
     for (i in seq_len (nrow (src))) {
         u <- src$url [i]
         res_kind <- if ("resolve" %in% names (src)) src$resolve [i] else NA_character_
@@ -326,24 +356,70 @@ fetch_source <- function (store, src, check = FALSE) {
         }
         log_fetch (store, sid, row)
         message (sid, " <- ", u, ": ", row$status, " ", row$outcome)
-        if (row$outcome %in% c ("new", "unchanged", "not_modified")) return (invisible (row))
+        attempts [[length (attempts) + 1L]] <- row [c ("url", "kind", "status", "outcome", "error")]
+        if (row$outcome %in% c ("new", "unchanged", "not_modified")) {
+            return (invisible (list (source_id = sid, ok = TRUE, used_kind = row$kind,
+                outcome = row$outcome, attempts = attempts)))
+        }
     }
-    invisible (NULL)
+    invisible (list (source_id = sid, ok = FALSE, used_kind = NA_character_,
+        outcome = "all_failed", attempts = attempts))
 }
 
-#' Per-feed summary for alerting: newest service_end and days left.
-write_status <- function (store) {
+#' Per-feed summary for alerting: newest service_end, days left, validation
+#' counts, and (when given) this run's fetch results. Writes status.json and a
+#' Markdown status.md, and sets alert = TRUE when any feed is expired or
+#' expiring, failed to fetch, or came from a fallback instead of an official URL.
+write_status <- function (store, fetches = list ()) {
     cat_dt <- read_catalog (store)
-    if (!nrow (cat_dt)) return (invisible ())
     today <- Sys.Date ()
     st <- cat_dt [, .SD [order (service_end, snapshot, decreasing = TRUE)] [1], by = source_id]
-    st [, days_left := as.integer (as.Date (service_end) - today)]
-    st [, state := fifelse (days_left < 0, "expired", fifelse (days_left <= warn_days, "expiring", "ok"))]
-    out <- st [, .(source_id, snapshot, service_start, service_end, days_left, state, source_kind)]
-    write_json (list (checked = format (today), warn_days = warn_days, feeds = out),
-        file.path (store, "status.json"))
-    print (out)
-    invisible (out)
+    if (nrow (st)) {
+        st [, days_left := as.integer (as.Date (service_end) - today)]
+        st [, state := fifelse (days_left < 0, "expired", fifelse (days_left <= warn_days, "expiring", "ok"))]
+    }
+    feeds <- st [, intersect (c ("source_id", "snapshot", "service_start", "service_end", "days_left",
+        "state", "source_kind", "feed_version", "n_errors", "n_warnings"), names (st)), with = FALSE]
+
+    reasons <- character ()
+    for (i in seq_len (nrow (feeds))) {
+        if (feeds$state [i] != "ok") {
+            reasons <- c (reasons, sprintf ("`%s` is %s: service ends %s (%d days)",
+                feeds$source_id [i], feeds$state [i], feeds$service_end [i], feeds$days_left [i]))
+        }
+    }
+    for (f in fetches) {
+        if (!f$ok) {
+            reasons <- c (reasons, sprintf ("`%s`: every source URL failed", f$source_id))
+        } else if (!identical (f$used_kind, "official")) {
+            reasons <- c (reasons, sprintf ("`%s`: official URL failed, used %s copy", f$source_id, f$used_kind))
+        }
+    }
+
+    write_json (list (checked = format (today), warn_days = warn_days, alert = length (reasons) > 0,
+        alert_reasons = I (reasons), feeds = feeds, fetch = fetches), file.path (store, "status.json"))
+
+    md <- c (sprintf ("GTFS feed status, checked %s (warning at %d days before expiry).", today, warn_days), "")
+    if (length (reasons)) md <- c (md, "**Needs attention:**", "", paste0 ("- ", reasons), "")
+    md <- c (md, "| feed | service | days left | state | version | validator errors / warnings |",
+        "|---|---|---|---|---|---|")
+    na_dash <- function (x) ifelse (is.na (x) | x == "", "-", x)
+    for (i in seq_len (nrow (feeds))) {
+        md <- c (md, sprintf ("| `%s` | %s to %s | %d | %s | %s | %s / %s |",
+            feeds$source_id [i], feeds$service_start [i], feeds$service_end [i], feeds$days_left [i],
+            feeds$state [i], na_dash (feeds$feed_version [i]),
+            na_dash (feeds$n_errors [i]), na_dash (feeds$n_warnings [i])))
+    }
+    if (length (fetches)) {
+        md <- c (md, "", "Fetch attempts this run:", "")
+        for (f in fetches) for (a in f$attempts) {
+            md <- c (md, sprintf ("- `%s` %s (%s): %s %s", f$source_id, a$kind, sub ("\\?.*", "", a$url),
+                na_dash (a$status), a$outcome))
+        }
+    }
+    writeLines (md, file.path (store, "status.md"))
+    print (feeds)
+    invisible (feeds)
 }
 
 # ---- main -------------------------------------------------------------------
@@ -352,6 +428,9 @@ main <- function (a = parse_args (commandArgs (TRUE))) {
     if (is.null (a$store)) stop ("--store DIR is required")
     dir.create (a$store, recursive = TRUE, showWarnings = FALSE)
     check <- isTRUE (a$check)
+    if (!is.null (a$validator)) options (gtfs.validator = normalizePath (a$validator, mustWork = TRUE))
+    if (!is.null (a$java)) options (gtfs.java = a$java)
+    fetches <- list ()
 
     if (!is.null (a$file)) {
         for (k in c ("source_id", "kind", "url")) {
@@ -365,12 +444,12 @@ main <- function (a = parse_args (commandArgs (TRUE))) {
         srcs <- fread (f, colClasses = "character")
         if (!is.null (a$only)) srcs <- srcs [source_id %in% strsplit (a$only, ",") [[1]]]
         for (sid in unique (srcs$source_id)) {
-            if (is.null (fetch_source (a$store, srcs [source_id == sid], check))) {
-                message (sid, ": every source failed")
-            }
+            r <- fetch_source (a$store, srcs [source_id == sid], check)
+            if (!r$ok) message (sid, ": every source failed")
+            fetches [[sid]] <- r
         }
     }
-    write_status (a$store)
+    write_status (a$store, unname (fetches))
 }
 
 if (sys.nframe () == 0L) main ()

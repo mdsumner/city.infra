@@ -3,8 +3,9 @@ title: "Plan: a robust Tasmanian GTFS feed"
 date: 2026-11-07
 ---
 
-Status: **fetcher started** (`scripts/gtfs/`, local store only, no uploads
-yet). Decisions for Michael are in the last section.
+Status: **fetcher and weekly workflow running** (`scripts/gtfs/`,
+`gtfs-weekly.yml`): fetch, validate, alert. No uploads yet, so nothing
+persists between runs beyond 90-day run artifacts. Decisions for Michael are in the last section.
 
 ## Update 2026-11-08 (checked from a machine outside the sandbox)
 
@@ -245,10 +246,11 @@ Third-party copies are archived for reproducibility only and labelled as such.
   403 to scripted requests from here). Need the zip's exact href to add it to
   `sources.csv`, and to see whether it is a statewide feed or the same three
   regional ones.
-- **Runner:** `gtfs-probe.yml` (manual, probe-only) added; run once to see
-  whether a GitHub runner gets past the 403.
+- **Runner (settled 2026-11-08):** the probe run from GitHub Actions reached
+  every URL in `sources.csv`, and got 403 from transport.tas.gov.au, the same
+  as from here. Weekly fetching runs on Actions.
 - **Scope (decided 2026-11-08):** all three regional feeds plus SkyBus Hobart.
-- **Secrets:** add `SOURCE_COOP_*` credentials with write access to
+- **Secrets (later, with an IAM walkthrough first):** add `SOURCE_COOP_*` credentials with write access to
   `tas-transport-web` on this repo (or run uploads from thelist-opendata)?
 - **Backfill:** register for a Mobility Database or Transitland key to pull
   older versions, or start from the two copies we have?
