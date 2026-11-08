@@ -3,7 +3,9 @@ title: "Draft: wkpool contributing to neighbourhoods"
 date: 2026-11-08
 ---
 
-Status: **draft for discussion, nothing filed upstream.** Read against
+Status: **draft for discussion, nothing filed upstream.** Update
+2026-11-08: `find_faces()` is built (hypertidy/wkpool#14) and compared with
+`network_cycles()`; see "Results" below. Read against
 `UrbanAnalyst/neighbourhoods` at `8e08513` (2026-11-06) and `hypertidy/wkpool`
 at `ccbbeb9` (2026-10-25). Items marked *(to verify)* need a test before they
 go anywhere.
@@ -90,6 +92,15 @@ forward edges. Fix: `paste0 (edges, "_rev")`.
 Before filing: a small network where a face is only reachable from a
 reverse restart edge, run before and after.
 
+### 1b. Short edge ids crash `network_cycles()`
+
+`utils::cut_terminal_rev()` (src/utils.cpp) takes `size () - 4` on every
+edge id, which underflows for ids shorter than four characters
+(`basic_string::substr: __pos (which is 18446744073709551613)`). OSM ids
+are long, so this never shows in normal use, but any other network with
+short ids ("1", "2", ...) fails. Found while building the planar test
+graphs below; fix: check the length before comparing the suffix.
+
 ### 2. `adjacent_cycles()` in one pass
 
 Currently, for each cycle it scans every other cycle's edges with `%in%`,
@@ -150,25 +161,73 @@ step that splits segments at crossings, with a flag on such split points.
   apportioned to faces by overlay instead, and the retired `raster`
   dependency could go. That is a separate conversation.
 
-## How to show it works
+## Results
 
-- Build `pool_faces()` on a wkpool branch with tests on small hand-made
-  graphs (grid, grid with a dangle, two blocks joined by one edge, a hole).
-- Run it and `network_cycles()` on the same contracted networks: an OSM
-  extract from the `neighbourhoods` examples, and Greater Hobart from LIST
-  (53,478 segments, already used in the access run). Compare the set of
-  cycles (as sorted edge-id sets) and the time taken.
-- Report differences case by case: a face one method finds and the other
-  does not is either a bug in one of them or a planarity case.
+Harness: [scripts/wkpool-faces/](https://github.com/mdsumner/city.infra/tree/main/scripts/wkpool-faces);
+result files in [wkpool-faces/](wkpool-faces/). Both methods get identical
+input and cycles are compared as sets of edge ids. `find_faces()` faces are
+the bounded ones (positive area), with dead-end edges left out.
 
-Only after that: an issue on `neighbourhoods` proposing the swap, with the
-comparison attached.
+**Planar test graphs.** Jittered grids (8, 20 and 40 vertices a side, 0, 15
+and 30% of edges removed, 3 seeds each; up to 3,120 edges), where the true
+number of faces is known from Euler's formula:
 
-## First step
+- `find_faces()` gives exactly the right faces in all 27 runs.
+- `network_cycles()` finds every true face in 25 of 27 runs. It nearly
+  always adds one extra cycle, which in 17 runs is exactly the outer
+  boundary of the graph. In the other two runs it misses faces: in one, 2
+  true faces are replaced by 2 cycles that each outline a group of faces; in
+  the other, one face is missing.
+- Time: `network_cycles()` up to 1.1 s on these graphs (`find_faces()` was
+  not timed here; see Hobart below).
 
-Prototype `pool_faces()` in wkpool and the comparison harness here
-(`scripts/wkpool-faces/`), starting with the hand-made test graphs. Items 1
-and 2 can be drafted as issues in parallel, each with a minimal example.
+**Greater Hobart, LIST.** The graph `network_cycles()` works on: straight
+edges between LIST node ids (largest component, 50,661 edges, 44,271
+vertices; 414 parallel duplicates and self-loops removed for both).
+
+| | `network_cycles()` | `find_faces()` |
+|---|---:|---:|
+| cycles / bounded faces | 6,436 (9 exact duplicates) | 6,108 |
+| time | about 20 s | 0.06 s |
+| found by both | 5,964 | 5,964 |
+| found only by this method | 463 | 144 |
+
+- Of the 463 found only by `network_cycles()`: 14 are the outer boundary of
+  the network and 22 outline a group of `find_faces()` faces (non-minimal
+  cycles); the other 427 are not classified yet.
+- Of the 144 found only by `find_faces()`: 101 are self-crossing outlines.
+  Across all faces, 159 are self-crossing.
+- The cause of most differences is that **this graph is not planar**:
+  Euler's formula gives genus 133. Straight edges between the nodes of
+  curved roads cross where the roads do not, and real overpasses add more.
+  On the full LIST geometry (every vertex, 483,302 edges) the genus falls
+  to 57, about the number of real crossings without a junction, and
+  `find_faces()` takes 0.74 s (bounded faces within 0.15% of GEOS
+  polygonize by area).
+
+What this says for the proposal:
+
+- On planar input `find_faces()` is exact where the current search is
+  usually right but not always. On Hobart it is about 300 times faster
+  (0.06 s against about 20 s).
+- The current pipeline finds cycles on the contracted graph, where curved
+  roads are straight chords. Faces should be found on the full geometry
+  and contracted afterwards (the face of each half-edge carries through
+  contraction), which also removes most of the crossing artefacts that
+  any method has to cope with.
+- The remaining 57 or so real crossings in Hobart need a decision (see
+  the questions below).
+
+## Next steps
+
+- Run `network_cycles()` on the full-geometry Hobart graph as well, and
+  classify the 427 unexplained cycles.
+- Draft issues for 1, 1b and 2, each with a minimal example (1b already has
+  one in `compare_planar_grids.R`).
+- A small adapter from `find_faces()` output to the `network_cycles()`
+  result shape (a list of edge tables per cycle), so `adjacent_cycles()` and
+  the rest of the pipeline can run on it unchanged for a side-by-side LTN
+  result.
 
 ## Questions for the neighbourhoods maintainer
 

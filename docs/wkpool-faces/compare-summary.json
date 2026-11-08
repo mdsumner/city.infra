@@ -1,0 +1,19 @@
+{
+  "edges": 50661,
+  "vertices": 44271,
+  "parallel_dropped": 414,
+  "euler_V_minus_E_plus_F": -264,
+  "genus": 133,
+  "network_cycles": 6436,
+  "network_cycles_duplicates": 9,
+  "network_cycles_seconds": 20.968,
+  "find_faces_bounded": 6108,
+  "find_faces_seconds": 0.064,
+  "in_both": 5964,
+  "only_network_cycles": 463,
+  "only_network_cycles_outer": 14,
+  "only_network_cycles_union_of_faces": 22,
+  "only_find_faces": 144,
+  "only_find_faces_self_crossing": 101,
+  "find_faces_self_crossing_all": 159
+}
