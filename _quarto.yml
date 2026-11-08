@@ -37,6 +37,8 @@ website:
             text: Mapper review
           - href: docs/gtfs-feed-plan.md
             text: GTFS feed plan
+          - href: docs/wkpool-neighbourhoods.md
+            text: "Draft: wkpool and neighbourhoods"
           - href: data/README.md
             text: Data provenance
           - href: notes/thelist-opendata-status.md
