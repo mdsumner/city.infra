@@ -29,7 +29,9 @@ dir.create (outdir, showWarnings = FALSE, recursive = TRUE)
 
 walk_speed <- 4.8 / 3.6 # m/s
 rhh_geocode <- 278074L # LIST GEOCODE_ID for 48 Liverpool St, Hobart
-gtfs_date <- 20260804L # a Tuesday inside the feed's validity (2026-06-03 to 2026-08-31)
+# Analysis day: GTFS_DATE=YYYYMMDD if set, otherwise picked from the feed
+# (see pick_gtfs_date below). The 2026 first run used 20260804 with feed
+# version 20.
 gtfs_day <- "tuesday"
 start_window <- c (7.5, 8.5) * 3600 # first boarding between 07:30 and 08:30
 max_pt_seconds <- 2 * 3600 # cap on the public transport leg
@@ -110,9 +112,37 @@ a$walk_min <- d_walk [match (a$vid, to_v)] / walk_speed / 60
 
 tick ("reading GTFS")
 gtfs <- extract_gtfs (f_gtfs, quiet = TRUE)
+
+#' First Tuesday on or after the later of today and the feed's start date
+#' (feed_info if present, else calendar) that has no service removed in
+#' calendar_dates, so public holidays and one-off changes are skipped.
+pick_gtfs_date <- function (gtfs) {
+    fi <- utils::unzip (f_gtfs, list = TRUE)$Name
+    feed_start <- if ("feed_info.txt" %in% fi) {
+        x <- fread (cmd = paste ("unzip -p", shQuote (f_gtfs), "feed_info.txt"), colClasses = "character")
+        as.Date (x$feed_start_date [1], "%Y%m%d")
+    } else NA
+    cal_start <- as.Date (as.character (min (gtfs$calendar$start_date)), "%Y%m%d")
+    cal_end <- as.Date (as.character (max (gtfs$calendar$end_date)), "%Y%m%d")
+    d0 <- max (Sys.Date (), feed_start, cal_start, na.rm = TRUE)
+    removed <- if (!is.null (gtfs$calendar_dates)) {
+        as.Date (as.character (gtfs$calendar_dates$date [gtfs$calendar_dates$exception_type == 2]), "%Y%m%d")
+    } else as.Date (character ())
+    days <- seq (d0, cal_end, by = "day")
+    days <- days [format (days, "%u") == "2" & !days %in% removed]
+    if (!length (days)) stop ("no Tuesday without exceptions between ", d0, " and ", cal_end)
+    as.integer (format (days [1], "%Y%m%d"))
+}
+gtfs_date <- if (nzchar (Sys.getenv ("GTFS_DATE"))) as.integer (Sys.getenv ("GTFS_DATE")) else pick_gtfs_date (gtfs)
+tick (sprintf ("analysis date %d (%s)", gtfs_date, gtfs_day))
 stops_in <- gtfs$stops [
     stop_lon >= bb [1] & stop_lon <= bb [2] & stop_lat >= bb [3] & stop_lat <= bb [4]
 ]
+# Boarding points only: parent stations (location_type 1) and entrances have
+# no trips, and as virtual-source targets they would carry walk-only times.
+if ("location_type" %in% names (stops_in)) {
+    stops_in <- stops_in [is.na (location_type) | location_type == 0L]
+}
 gtfs <- gtfs_transfer_table (gtfs, d_limit = 200, quiet = TRUE)
 gtfs <- gtfs_timetable (gtfs, day = gtfs_day, date = gtfs_date)
 tick (sprintf (
@@ -163,18 +193,28 @@ via_pt [!is.finite (via_pt)] <- NA
 # best time from boarding stop s to the hospital door
 t_stop <- pmin (via_pt, walk_stop_rhh [row_stop], na.rm = TRUE)
 
+fwrite (data.table (stop_id = rownames (dur),
+                    stop_name = gtfs$stops$stop_name [row_stop],
+                    stop_lon = gtfs$stops$stop_lon [row_stop], stop_lat = gtfs$stops$stop_lat [row_stop],
+                    best_min = round (t_stop / 60, 1)),
+        file.path (outdir, "rhh-access-by-stop.csv"))
+
 # Multi-source trick: one virtual source joined to each boarding stop's
 # vertex by an edge whose length is the remaining time to the hospital
 # expressed as walking distance. Walk graph is symmetric, so the
 # shortest path source -> address equals address -> stop -> hospital.
+# Several stops can snap to one vertex. dodgr keeps only the FIRST of
+# parallel edges between the same pair of vertices (later, shorter ones are
+# ignored), so keep one edge per vertex: the fastest.
 ok <- !is.na (t_stop)
+sv <- data.table (to_id = stop_v [row_stop [ok]], t = t_stop [ok]) [, .(t = min (t)), by = to_id]
 src <- data.frame (
-    edge_id = paste0 ("src", seq_len (sum (ok))),
+    edge_id = paste0 ("src", seq_len (nrow (sv))),
     from_id = "SRC", from_lon = rhh$lon, from_lat = rhh$lat,
-    to_id = stop_v [row_stop [ok]],
-    to_lon = v$x [match (stop_v [row_stop [ok]], v$id)],
-    to_lat = v$y [match (stop_v [row_stop [ok]], v$id)],
-    d = t_stop [ok] * walk_speed,
+    to_id = sv$to_id,
+    to_lon = v$x [match (sv$to_id, v$id)],
+    to_lat = v$y [match (sv$to_id, v$id)],
+    d = sv$t * walk_speed,
     transeg_id = NA, tran_class = "virtual", lga = NA, component = 1L
 )
 src$d_weighted <- src$d
@@ -206,6 +246,14 @@ tot <- a [, .(
 )]
 s <- rbind (s, tot)
 fwrite (s, file.path (outdir, "rhh-access-by-lga.csv"))
+jsonlite::write_json (list (
+    gtfs_file = basename (f_gtfs),
+    gtfs_zip_sha256 = digest::digest (file = f_gtfs, algo = "sha256"),
+    gtfs_date = gtfs_date, gtfs_day = gtfs_day,
+    start_window_h = start_window / 3600, max_pt_minutes = max_pt_seconds / 60,
+    use_m4ra = use_m4ra, addresses = nrow (a), stops_in_area = nrow (stops_in),
+    run_at = format (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+), file.path (outdir, "run.json"), auto_unbox = TRUE, pretty = TRUE)
 print (s)
 
 loc <- a [, .(addresses = .N, pt_median_min = round (median (pt_min, na.rm = TRUE)),
@@ -222,7 +270,8 @@ cols <- hcl.colors (4, "viridis", rev = TRUE)
 b <- band (a$pt_min)
 plot (a$lon, a$lat, pch = ".", col = cols [as.integer (b)], asp = 1 / cos (-42.88 * pi / 180),
       xlab = "", ylab = "", axes = FALSE,
-      main = "Walk + public transport to Royal Hobart Hospital\nweekday, first boarding 07:30-08:30 (minutes)")
+      main = sprintf ("Walk + public transport to Royal Hobart Hospital\n%s, first boarding 07:30-08:30 (minutes)",
+                      format (as.Date (as.character (gtfs_date), "%Y%m%d"), "%a %d %b %Y")))
 points (rhh$lon, rhh$lat, pch = 4, cex = 2, lwd = 2, col = "red")
 legend ("topright", legend = levels (b), col = cols, pch = 15, bty = "n")
 mtext ("Address points and transport segments: theLIST, State of Tasmania. GTFS: Public Transport Tasmania",
