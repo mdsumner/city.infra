@@ -1,0 +1,18 @@
+{
+  "gtfs_file": "gtfs.zip",
+  "gtfs_zip_sha256": "979d88c9beb4ab3d3ae6a947de7c982f7dad08e8afffc4d4c03ccd90d2b2094e",
+  "gtfs_date": 20260804,
+  "gtfs_day": "tuesday",
+  "start_window_h": [
+    7.5,
+    8.5
+  ],
+  "max_pt_minutes": 120,
+  "use_m4ra": false,
+  "addresses": 109357,
+  "stops_in_area": 1904,
+  "run_at": "2026-11-08T12:58:04Z",
+  "gtfs_snapshot": "tas-statewide/2026-06-20",
+  "gtfs_feed_version": "20",
+  "gtfs_publisher": "Public Transport Tasmania (CC BY 4.0), third-party copy: github.com/devdennish/TransitTasmania@1048ace"
+}

@@ -255,6 +255,13 @@ Third-party copies are archived for reproducibility only and labelled as such.
    `tas-transport-web/gtfs/` (needs the source.coop secrets on this repo).
 4. Backfill the two known 2026 copies; re-run the Hobart access script
    against `gtfs/tas-statewide/<snapshot>` and against the current feed.
+   **Done 2026-11-08** in a local store (to upload once source.coop is set
+   up): `tas-statewide/2026-06-20` (version 20, rebuilt from
+   `devdennish/TransitTasmania@1048ace`, the only version in that repo's
+   history; git may have normalised line endings, so its content hash need
+   not match the original PTT zip) and `metrotas-hobart/2026-06-04` (MDB
+   mirror). Both Hobart runs redone: see
+   [02-hobart-pipeline.md](02-hobart-pipeline.md).
 5. PR the updated producer URL to the Mobility Database catalogue; tell the
    producer about `agency_timezone`.
 6. Later: derived Parquet tables, stops in the mapper, GTFS-Realtime if
