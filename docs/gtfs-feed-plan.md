@@ -3,8 +3,30 @@ title: "Plan: a robust Tasmanian GTFS feed"
 date: 2026-11-07
 ---
 
-Status: **plan only, nothing set up yet.** Decisions for Michael are in the
-last section.
+Status: **fetcher started** (`scripts/gtfs/`, local store only, no uploads
+yet). Decisions for Michael are in the last section.
+
+## Update 2026-11-08 (checked from a machine outside the sandbox)
+
+- The Metro Tasmania producer URL **works**. The old
+  `www.metrotas.com.au/wp-content/uploads/transit/<Region>/google_transit.zip`
+  redirects to `https://cdn.metrotas.com.au/uploads/transit/<Region>/google_transit.zip`
+  (S3 behind CloudFront, MEL edge). It answers ETag / Last-Modified and
+  returns `304` to conditional requests.
+- There is **no single statewide feed** at these URLs. There are three
+  regional feeds, now three `source_id`s: `metrotas-hobart` (Metro Hobart,
+  Tassielink, Derwent Valley Link, Redline, Derwent Ferries; 2,127 stops),
+  `metrotas-launceston` (Metro Launceston plus Lee's, Manion's, Calow's,
+  East Tamar and others) and `metrotas-burnie`. The Mobility Database
+  "statewide" label below is really the Hobart (southern) feed.
+- **The Hobart feed is expired at the source.** Last-Modified 2026-07-27,
+  service 2026-05-03 to 2026-10-03. Launceston and Burnie (Last-Modified
+  2026-06-16) run to 2026-12-26. So a current southern feed, if there is one,
+  is published somewhere else, most likely on transport.tas.gov.au. That site
+  returns 403 to scripted requests from here, so the link needs checking in a
+  browser.
+- None of the feeds has `feed_info.txt`, so there is no `feed_version`. The
+  content hash and service range are the only identity.
 
 ## Why
 
@@ -193,11 +215,14 @@ validator jar. Uploads via `aws s3 cp` against `https://data.source.coop`.
 
 ## Licence
 
-To confirm before publishing: the terms on the Public Transport Tasmania GTFS
-page (Tasmanian Government open data is usually CC BY 4.0 or 3.0 AU) and the
-SkyBus feed terms. Record them in `tas-transport-web`'s README and in each
-`snapshot.json`. Third-party copies are archived for reproducibility only and
-labelled as such.
+- Public Transport Tasmania GTFS
+  (<https://www.transport.tas.gov.au/public_transport/gtfs-data>):
+  **Creative Commons Attribution 4.0 International** (confirmed by Michael
+  in a browser, 2026-11-08).
+- SkyBus Hobart: terms still to confirm.
+
+Record these in `tas-transport-web`'s README and in each `snapshot.json`.
+Third-party copies are archived for reproducibility only and labelled as such.
 
 ## Proposed steps
 
@@ -215,9 +240,14 @@ labelled as such.
 
 ## Decisions for Michael
 
-- **Source URL:** what is the current official statewide GTFS download link?
-- **Runner:** OK to add a probe-only Actions job first (no uploads)?
-- **Scope:** statewide feed only to start, or also SkyBus Hobart?
+- **Source URL:** the official page is
+  <https://www.transport.tas.gov.au/public_transport/gtfs-data> (it returns
+  403 to scripted requests from here). Need the zip's exact href to add it to
+  `sources.csv`, and to see whether it is a statewide feed or the same three
+  regional ones.
+- **Runner:** `gtfs-probe.yml` (manual, probe-only) added; run once to see
+  whether a GitHub runner gets past the 403.
+- **Scope (decided 2026-11-08):** all three regional feeds plus SkyBus Hobart.
 - **Secrets:** add `SOURCE_COOP_*` credentials with write access to
   `tas-transport-web` on this repo (or run uploads from thelist-opendata)?
 - **Backfill:** register for a Mobility Database or Transitland key to pull
