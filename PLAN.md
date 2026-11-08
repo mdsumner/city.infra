@@ -24,8 +24,10 @@ best positive social impact for the effort.
 - **sfnetworks review.** Node matching by rounded-coordinate strings is behind
   sfnetworks issue #130; wkpool already matches on exact coordinate values
   (PR #7, `notes/sfnetworks/sfnetworks-wkpool.md`).
-- **GTFS feed.** Planning a dependable source of dated Tasmanian GTFS
-  snapshots (interim home: `tas-transport-web`, `gtfs/` prefix).
+- **GTFS feed.** Plan for dependable, dated Tasmanian GTFS snapshots
+  (interim home: `tas-transport-web`, `gtfs/` prefix):
+  [docs/gtfs-feed-plan.md](docs/gtfs-feed-plan.md). Fetcher started in
+  `scripts/gtfs/` (local store; uploads and weekly job still to do).
 
 ## Steps
 

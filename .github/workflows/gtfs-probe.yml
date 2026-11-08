@@ -1,0 +1,27 @@
+name: GTFS source probe
+
+# Probe only: checks which GTFS source URLs a GitHub runner can reach.
+# Downloads nothing to keep, uploads nothing. See docs/gtfs-feed-plan.md.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: HEAD each source URL
+        run: |
+          {
+            tail -n +2 scripts/gtfs/sources.csv | cut -d, -f3
+            echo "https://www.transport.tas.gov.au/"
+          } | while read -r url; do
+            echo "== $url"
+            curl -sS -o /dev/null -I -L --max-time 30 \
+              -A "city.infra-gtfs-archiver (+https://github.com/${GITHUB_REPOSITORY})" \
+              -w 'status=%{http_code} type=%{content_type} final=%{url_effective}\n' "$url" || echo "curl failed"
+          done
