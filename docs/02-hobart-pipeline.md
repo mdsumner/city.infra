@@ -70,6 +70,34 @@ before it goes in any proposal. Per-locality medians are in
 - One weekday in the August 2026 timetable, one morning window, one
   destination.
 
+## Rerun: official statewide feed, November 2026
+
+Same script and LIST inputs, on the official Public Transport Tasmania feed
+(version 25, archived as `tas-statewide/2026-11-08`, see
+[gtfs-feed-plan.md](gtfs-feed-plan.md)) for **Tuesday 2026-11-17**, the
+first Tuesday after the feed's start date with no service exceptions. The
+script now picks that date itself (or takes `GTFS_DATE`), writes `run.json`
+with the feed hash and date, and a per-stop table of the best time from each
+boarding stop to the hospital door. Outputs:
+[02-hobart/2026-11-17-v25/](02-hobart/2026-11-17-v25/).
+
+![Walk + public transport to the Royal Hobart Hospital, 17 November 2026](02-hobart/2026-11-17-v25/rhh-access-map.png)
+
+| LGA | Addresses | Walk + PT, 30 min | 45 min | 60 min | Median (min) | August median |
+|---|---:|---:|---:|---:|---:|---:|
+| Hobart | 27,844 | 91.2 | 99.5 | 99.9 | 18 | 18 |
+| Glenorchy | 24,379 | 30.8 | 84.0 | 97.4 | 35 | 36 |
+| Clarence | 30,514 | 37.7 | 70.7 | 90.0 | 37 | 38 |
+| Kingborough | 17,566 | 1.4 | 47.0 | 78.6 | 46 | 46 |
+| Brighton | 9,004 | 0 | 13.5 | 48.1 | 60 | 61 |
+| All five | 109,357 | 40.8 | 72.5 | 88.9 | 35 | 36 |
+
+The November timetable gives much the same picture as August: Brighton is
+still the outlier, with under half of addresses within an hour. Most
+suburbs move by a minute or less, and part of that is the fix below
+(friction point 8), not the timetable. The August run cannot be redone with
+the fix until its feed (version 20) is in the archive.
+
 ## Friction log
 
 Ordered by how much each one matters for UA work beyond Hobart.
@@ -102,7 +130,8 @@ Ordered by how much each one matters for UA work beyond Hobart.
    the flat. This is where the segment mapper fits: people tagging
    network patches with what it is actually like to walk or ride them. A
    DEM-based slope cost is a quick win on top.
-5. **No stable GTFS source.** The Metro Tasmania and Transport Tasmania
+5. **No stable GTFS source** (resolved November 2026: weekly archive of
+   the official statewide feed, see [gtfs-feed-plan.md](gtfs-feed-plan.md)). The Metro Tasmania and Transport Tasmania
    sites were unreachable from this sandbox, and the run used a copy of the
    official statewide feed (version 20, valid 2026-06-03 to 2026-08-31)
    found in a third-party GitHub repository (`devdennish/TransitTasmania`).
@@ -116,7 +145,19 @@ Ordered by how much each one matters for UA work beyond Hobart.
 7. **Destinations are hand-picked.** There is no points-of-interest layer
    in the mirror; the hospital is LIST GEOCODE_ID 278074, found by hand.
    LIST has facility layers that could fill this.
-8. **Smaller things.**
+8. **dodgr keeps only the first of parallel edges.** Found on the
+   November rerun: Huntingfield's median jumped from 34 to 49 minutes with
+   no change in its buses. The new feed adds parent stations
+   (`location_type = 1`, e.g. `place_inthun`, Huntingfield Park and Ride),
+   which have no trips, so their best time to the hospital is walk-only
+   (177 minutes). The station snapped to the same walk vertex as its
+   Stop A (25 minutes), giving two virtual-source edges to one vertex, and
+   `dodgr_dists()` used the first and silently ignored the shorter second
+   one (checked on a three-edge toy graph). The script now drops
+   non-boarding stops and keeps one virtual edge per vertex, the fastest.
+   Worth reporting upstream: either take the minimum of parallel edges or
+   warn.
+9. **Smaller things.**
    - dodgr hard-imports osmdata, so a non-OSM user still installs the OSM
      stack. m4ra needs RcppThread at build time.
    - R in this sandbox had no Parquet reader (no arrow or nanoparquet, and
