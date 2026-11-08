@@ -42,6 +42,21 @@ Rscript 04_map_access.R out/rhh-access-addresses.csv.gz context/ out/run.json ou
 single-hue blue ramp (light is quick, dark is slow) checked as an ordinal
 palette; water is grey so it is not read as data.
 
+To weight results by people and disadvantage, download the ABS 2021 files
+and run `05_people_seifa.R` (needs sf, readxl, data.table, jsonlite):
+
+```sh
+B=https://www.abs.gov.au
+curl -o mb.zip "$B/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files/MB_2021_AUST_SHP_GDA94.zip"
+curl -o mbcounts.xlsx "$B/census/guide-census-data/mesh-block-counts/2021/Mesh%20Block%20Counts%2C%202021.xlsx"
+curl -o seifa_sa1.xlsx "$B/statistics/people/people-and-communities/socio-economic-indexes-areas-seifa-australia/2021/Statistical%20Area%20Level%201%2C%20Indexes%2C%20SEIFA%202021.xlsx"
+Rscript 05_people_seifa.R out/rhh-access-addresses.csv.gz mb.zip mbcounts.xlsx seifa_sa1.xlsx out/
+```
+
+It writes people-weighted tables by IRSD quintile, LGA, LGA by quintile and
+SA2, `people-coverage.json`, and `rhh-people-sa2.png`. ABS data are CC BY
+4.0.
+
 `03_access_rhh.R` needs dodgr, gtfsrouter, m4ra, data.table, sf and
 geodist. It takes about 30 seconds on 4 cores. Set `USE_M4RA=1` to build the
 stop-to-stop matrix with `m4ra_gtfs_traveltimes()` instead of
