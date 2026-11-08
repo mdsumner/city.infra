@@ -1,0 +1,89 @@
+name: GTFS weekly fetch
+
+# Fetch every feed in scripts/gtfs/sources.csv, validate (MobilityData
+# validator + gtfsrouter timetable check), keep the store as a run artifact,
+# and keep one "GTFS feed alert" issue in sync with the feed status.
+#
+# No uploads yet: each run starts from an empty store, so every feed shows as
+# "new". The permanent archive is the source.coop step (docs/gtfs-feed-plan.md).
+
+on:
+  schedule:
+    - cron: "17 20 * * 0" # Sunday 20:17 UTC = Monday 06:17 / 07:17 in Hobart
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  VALIDATOR_VERSION: "8.0.1"
+  ALERT_TITLE: "GTFS feed alert"
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::httr2
+            any::digest
+            any::jsonlite
+            any::data.table
+            any::gtfsrouter
+
+      - name: Get the GTFS validator
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "v${VALIDATOR_VERSION}" -R MobilityData/gtfs-validator \
+            -p "gtfs-validator-${VALIDATOR_VERSION}-cli.jar" -O validator.jar
+
+      - name: Fetch, check and validate
+        run: |
+          Rscript scripts/gtfs/gtfs_snapshot.R --store gtfs-store --check --validator validator.jar
+          cat gtfs-store/status.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gtfs-store-${{ github.run_id }}
+          path: gtfs-store
+          retention-days: 90
+
+      - name: Sync the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          alert=$(jq -r '.alert' gtfs-store/status.json)
+          # Signature of what is wrong; comment only when it changes.
+          sig=$(jq -r '.alert_reasons | map(gsub(" \\(-?[0-9]+ days\\)"; "")) | join("; ")' gtfs-store/status.json)
+          num=$(gh issue list --state open --json number,title \
+            -q "map(select(.title == \"${ALERT_TITLE}\")) | .[0].number // empty")
+          { cat gtfs-store/status.md; echo; echo "Run: ${RUN_URL}"; echo; echo "<!-- sig: ${sig} -->"; } > body.md
+
+          if [ "$alert" = "true" ]; then
+            if [ -z "$num" ]; then
+              gh issue create --title "$ALERT_TITLE" --body-file body.md
+            else
+              old=$(gh issue view "$num" --json body -q .body | sed -n 's/^<!-- sig: \(.*\) -->$/\1/p')
+              gh issue edit "$num" --body-file body.md
+              if [ "$old" != "$sig" ]; then
+                gh issue comment "$num" --body "Status changed: ${sig} (${RUN_URL})"
+              fi
+            fi
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "All feeds OK as of ${RUN_URL}"
+          fi
