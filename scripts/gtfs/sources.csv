@@ -1,9 +1,10 @@
-source_id,priority,url,kind,resolve,notes
-metrotas-hobart,1,https://cdn.metrotas.com.au/uploads/transit/Hobart/google_transit.zip,official,,"Southern Tasmania: Metro Hobart, Tassielink, Derwent Valley Link, Redline, Derwent Ferries. Old metrotas.com.au/wp-content URL redirects here."
-metrotas-hobart,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-hobart-gtfs-665.zip?alt=media,mirror,,Mobility Database latest copy of source 665
-metrotas-launceston,1,https://cdn.metrotas.com.au/uploads/transit/Launceston/google_transit.zip,official,,"Northern Tasmania: Metro Launceston, Tassielink, Lee's, Manion's, Calow's, Redline, East Tamar"
-metrotas-launceston,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-launceston-gtfs-682.zip?alt=media,mirror,,Mobility Database latest copy of source 682
-metrotas-burnie,1,https://cdn.metrotas.com.au/uploads/transit/Burnie/google_transit.zip,official,,North-west Tasmania
-metrotas-burnie,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-burnie-gtfs-681.zip?alt=media,mirror,,Mobility Database latest copy of source 681
-skybus-hobart,1,https://raw.githubusercontent.com/MobilityData/mobility-database-catalogs/main/catalogs/sources/gtfs/schedule/au-hobart-skybus-hobart-gtfs-3147.json,official,mdb_catalog,"Airport bus. Official URL is a signed Azure blob link published in the MDB catalogue entry; resolved at fetch time."
-skybus-hobart,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-hobart-skybus-hobart-gtfs-3147.zip?alt=media,mirror,,Mobility Database latest copy of source 3147
+source_id,priority,url,kind,resolve,expiry_alert,notes
+tas-statewide,1,https://www.transport.tas.gov.au/__data/assets/file/0011/557615/tas_gtfs.zip,official,,yes,"Public Transport Tasmania statewide feed (all operators), CC BY 4.0. Linked from https://www.transport.tas.gov.au/public_transport/gtfs-data, which itself returns 403 to scripts; the zip does not. No ETag / Last-Modified, so it is fully downloaded each run."
+metrotas-hobart,1,https://cdn.metrotas.com.au/uploads/transit/Hobart/google_transit.zip,official,,no,"Southern Tasmania: Metro Hobart, Tassielink, Derwent Valley Link, Redline, Derwent Ferries. Old metrotas.com.au/wp-content URL redirects here. Superseded by tas-statewide; archived, no expiry alert."
+metrotas-hobart,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-hobart-gtfs-665.zip?alt=media,mirror,,no,Mobility Database latest copy of source 665
+metrotas-launceston,1,https://cdn.metrotas.com.au/uploads/transit/Launceston/google_transit.zip,official,,no,"Northern Tasmania: Metro Launceston, Tassielink, Lee's, Manion's, Calow's, Redline, East Tamar"
+metrotas-launceston,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-launceston-gtfs-682.zip?alt=media,mirror,,no,Mobility Database latest copy of source 682
+metrotas-burnie,1,https://cdn.metrotas.com.au/uploads/transit/Burnie/google_transit.zip,official,,no,North-west Tasmania
+metrotas-burnie,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-tasmania-metrotas-burnie-gtfs-681.zip?alt=media,mirror,,no,Mobility Database latest copy of source 681
+skybus-hobart,1,https://raw.githubusercontent.com/MobilityData/mobility-database-catalogs/main/catalogs/sources/gtfs/schedule/au-hobart-skybus-hobart-gtfs-3147.json,official,mdb_catalog,yes,Airport bus. Official URL is a signed Azure blob link published in the MDB catalogue entry; resolved at fetch time.
+skybus-hobart,2,https://storage.googleapis.com/storage/v1/b/mdb-latest/o/au-hobart-skybus-hobart-gtfs-3147.zip?alt=media,mirror,,yes,Mobility Database latest copy of source 3147

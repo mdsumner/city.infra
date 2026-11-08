@@ -59,7 +59,9 @@ existing snapshot directory.
 An alert is raised (`status.json` `alert: true`) when a feed is expired or
 within 21 days of expiry, when every URL for a feed fails, or when a feed came
 from a mirror because the official URL failed (the sign that a producer URL
-moved). Validator errors are reported but do not raise an alert.
+moved). Validator errors are reported but do not raise an alert. A feed with
+`expiry_alert = no` in `sources.csv` (the superseded Metro regional feeds) is
+still fetched and reported, but its expiry does not alert.
 
 ## Workflows
 

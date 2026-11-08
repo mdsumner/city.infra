@@ -7,7 +7,28 @@ Status: **fetcher and weekly workflow running** (`scripts/gtfs/`,
 `gtfs-weekly.yml`): fetch, validate, alert. No uploads yet, so nothing
 persists between runs beyond 90-day run artifacts. Decisions for Michael are in the last section.
 
-## Update 2026-11-08 (checked from a machine outside the sandbox)
+## Update 2026-11-08: official statewide feed found
+
+The Public Transport Tasmania zip is at
+`https://www.transport.tas.gov.au/__data/assets/file/0011/557615/tas_gtfs.zip`,
+linked from <https://www.transport.tas.gov.au/public_transport/gtfs-data>
+(CC BY 4.0). The HTML pages return 403 to scripts, but the zip downloads fine
+(Cloudflare, no ETag / Last-Modified). It is now `tas-statewide`, the primary
+feed:
+
+- `feed_info`: Public Transport Tasmania, **version 25**, 2026-11-11 to
+  2027-02-28 (calendar from 2026-11-03). The Hobart run's third-party copy
+  was version 20, so it most likely came from this series.
+- 6 agencies (Calow's, Derwent Ferries, Kinetic, Manion's, Metro Tasmania,
+  Tassielink), 3,435 stops. `agency_timezone` is now `Australia/Tasmania`.
+- Validator 8.0.1: 0 errors, 18,898 warnings (mostly shape-distance notices).
+  gtfsrouter builds a timetable.
+
+The three Metro regional feeds below are kept and archived, but with
+`expiry_alert = no` in `sources.csv`: the expired Hobart one is superseded by
+the statewide feed and would otherwise hold the alert issue open.
+
+## Earlier on 2026-11-08 (checked from a machine outside the sandbox)
 
 - The Metro Tasmania producer URL **works**. The old
   `www.metrotas.com.au/wp-content/uploads/transit/<Region>/google_transit.zip`
@@ -241,11 +262,9 @@ Third-party copies are archived for reproducibility only and labelled as such.
 
 ## Decisions for Michael
 
-- **Source URL:** the official page is
-  <https://www.transport.tas.gov.au/public_transport/gtfs-data> (it returns
-  403 to scripted requests from here). Need the zip's exact href to add it to
-  `sources.csv`, and to see whether it is a statewide feed or the same three
-  regional ones.
+- **Source URL (settled 2026-11-08):** `tas-statewide`, see the update at
+  the top. If the asset URL changes when PTT replaces the file, the weekly
+  run will alert with "every source URL failed".
 - **Runner (settled 2026-11-08):** the probe run from GitHub Actions reached
   every URL in `sources.csv`, and got 403 from transport.tas.gov.au, the same
   as from here. Weekly fetching runs on Actions.
