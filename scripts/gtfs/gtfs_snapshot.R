@@ -370,7 +370,9 @@ fetch_source <- function (store, src, check = FALSE) {
 #' counts, and (when given) this run's fetch results. Writes status.json and a
 #' Markdown status.md, and sets alert = TRUE when any feed is expired or
 #' expiring, failed to fetch, or came from a fallback instead of an official URL.
-write_status <- function (store, fetches = list ()) {
+#' Feeds listed in `no_expiry_alert` are still reported but their expiry does
+#' not raise an alert (sources.csv column expiry_alert = "no").
+write_status <- function (store, fetches = list (), no_expiry_alert = character ()) {
     cat_dt <- read_catalog (store)
     today <- Sys.Date ()
     st <- cat_dt [, .SD [order (service_end, snapshot, decreasing = TRUE)] [1], by = source_id]
@@ -383,7 +385,7 @@ write_status <- function (store, fetches = list ()) {
 
     reasons <- character ()
     for (i in seq_len (nrow (feeds))) {
-        if (feeds$state [i] != "ok") {
+        if (feeds$state [i] != "ok" && !feeds$source_id [i] %in% no_expiry_alert) {
             reasons <- c (reasons, sprintf ("`%s` is %s: service ends %s (%d days)",
                 feeds$source_id [i], feeds$state [i], feeds$service_end [i], feeds$days_left [i]))
         }
@@ -407,7 +409,7 @@ write_status <- function (store, fetches = list ()) {
     for (i in seq_len (nrow (feeds))) {
         md <- c (md, sprintf ("| `%s` | %s to %s | %d | %s | %s | %s / %s |",
             feeds$source_id [i], feeds$service_start [i], feeds$service_end [i], feeds$days_left [i],
-            feeds$state [i], na_dash (feeds$feed_version [i]),
+            paste0 (feeds$state [i], if (feeds$source_id [i] %in% no_expiry_alert) " (no alert)" else ""), na_dash (feeds$feed_version [i]),
             na_dash (feeds$n_errors [i]), na_dash (feeds$n_warnings [i])))
     }
     if (length (fetches)) {
@@ -431,6 +433,7 @@ main <- function (a = parse_args (commandArgs (TRUE))) {
     if (!is.null (a$validator)) options (gtfs.validator = normalizePath (a$validator, mustWork = TRUE))
     if (!is.null (a$java)) options (gtfs.java = a$java)
     fetches <- list ()
+    no_alert <- character ()
 
     if (!is.null (a$file)) {
         for (k in c ("source_id", "kind", "url")) {
@@ -442,6 +445,7 @@ main <- function (a = parse_args (commandArgs (TRUE))) {
     } else {
         f <- if (is.null (a$sources)) file.path (script_dir (), "sources.csv") else a$sources
         srcs <- fread (f, colClasses = "character")
+        if ("expiry_alert" %in% names (srcs)) no_alert <- unique (srcs$source_id [srcs$expiry_alert %in% "no"])
         if (!is.null (a$only)) srcs <- srcs [source_id %in% strsplit (a$only, ",") [[1]]]
         for (sid in unique (srcs$source_id)) {
             r <- fetch_source (a$store, srcs [source_id == sid], check)
@@ -449,7 +453,7 @@ main <- function (a = parse_args (commandArgs (TRUE))) {
             fetches [[sid]] <- r
         }
     }
-    write_status (a$store, unname (fetches))
+    write_status (a$store, unname (fetches), no_alert)
 }
 
 if (sys.nframe () == 0L) main ()
