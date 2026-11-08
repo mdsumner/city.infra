@@ -64,9 +64,8 @@ snap to the edge of the network; they are in the CSV but left out here.)
 
 Brighton stands out: fewer than half of its addresses reach the hospital in
 an hour, with Bridgewater at a median of 61 minutes and Brighton itself 74.
-Bridgewater and Gagebrook are widely described as among the most
-disadvantaged suburbs in Tasmania; that needs checking against ABS SEIFA
-before it goes in any proposal. Per-locality medians are in
+Bridgewater and Gagebrook are the most disadvantaged SA2 in the study
+area on SEIFA 2021 (see "People and disadvantage" below). Per-locality medians are in
 [02-hobart/rhh-access-by-locality.csv](02-hobart/rhh-access-by-locality.csv).
 
 ### What the numbers assume
@@ -121,6 +120,89 @@ Two findings:
   section above are the first-run numbers and are kept as published; use the
   corrected ones.
 
+## People and disadvantage (November feed)
+
+The address results weighted by 2021 Census population and joined to SEIFA
+2021 ([scripts/02-hobart/05_people_seifa.R](https://github.com/mdsumner/city.infra/tree/main/scripts/02-hobart/05_people_seifa.R)).
+Each address is placed in its 2021 mesh block, and the mesh block's usual
+resident population is shared equally among the study addresses in it. Each
+address takes its SA1's Index of Relative Socio-economic Disadvantage (IRSD)
+decile, ranked within Tasmania (1 = most disadvantaged). Outputs, including
+per-SA2 and LGA by quintile tables, are in
+[02-hobart/2026-11-17-v25/](02-hobart/2026-11-17-v25/).
+
+Coverage: 226,352 people allocated to
+109,357 addresses (69 addresses fall
+outside any mesh block). Of Greater Hobart's
+231,295 residents,
+223,002
+(96%) live in mesh
+blocks that hold study addresses. 1,173 people are in
+SA1s without an IRSD score.
+
+**By disadvantage** (percent of people):
+
+| IRSD quintile (Tasmania) | People | Within 30 min | 45 min | 60 min | Median (min) |
+|---|---:|---:|---:|---:|---:|
+| 1 most disadvantaged | 30,537 | 22.6 | 69.6 | 92.8 | 39 |
+| 2 | 26,675 | 36.2 | 74.7 | 88.0 | 36 |
+| 3 | 32,093 | 42.9 | 81.5 | 91.4 | 34 |
+| 4 | 47,514 | 43.6 | 70.4 | 85.3 | 34 |
+| 5 least disadvantaged | 88,360 | 42.2 | 66.6 | 86.2 | 35 |
+
+**By LGA, people rather than addresses:**
+
+| LGA | People | Within 30 min | 45 min | 60 min | Median (min) |
+|---|---:|---:|---:|---:|---:|
+| Hobart | 54,742 | 90.3 | 99.4 | 99.9 | 19 |
+| Glenorchy | 50,483 | 29.7 | 83.3 | 97.2 | 36 |
+| Clarence | 62,041 | 38.5 | 71.2 | 89.9 | 36 |
+| Kingborough | 39,129 | 1.2 | 44.2 | 77.8 | 46 |
+| Brighton | 19,332 | 0 | 14.3 | 46.9 | 61 |
+| All | 226,352 | 39.2 | 71.0 | 87.9 | 36 |
+
+Weighting by people barely changes the LGA picture against the address
+counts above.
+
+![Median time to the hospital by SA2 against IRSD score](02-hobart/2026-11-17-v25/rhh-people-sa2.png)
+
+**SA2s in the three most disadvantaged deciles** (SA2s with at least 1,000
+residents; decile is the people-weighted median of their SA1s):
+
+| SA2 | IRSD decile (Tas) | People | Within 45 min | 60 min | Median (min) |
+|---|---:|---:|---:|---:|---:|
+| Bridgewater - Gagebrook | 1 | 8,184 | 2.2 | 61.9 | 58 |
+| Berriedale - Chigwell | 3 | 5,706 | 50.7 | 83.0 | 45 |
+| Rokeby | 2 | 7,895 | 71.2 | 99.4 | 44 |
+| Risdon Vale | 2 | 2,902 | 93.2 | 97.1 | 41 |
+| Claremont (Tas.) | 3 | 8,380 | 73.6 | 98.4 | 39 |
+| Glenorchy | 2 | 12,257 | 93.5 | 100.0 | 35 |
+| Mornington - Warrane | 2 | 5,162 | 100.0 | 100.0 | 23 |
+
+What this shows:
+
+- **Disadvantage is not simply distance.** The most disadvantaged fifth of
+  people have a median of 39 minutes against 34 to 36 for
+  the rest, and fewer of them are within 30 minutes (22.6%
+  against 36 to 44%). But 92.8% are within an hour, the highest
+  of any quintile: most live in middle-ring suburbs that this analysis finds
+  reasonably well connected (Glenorchy, Rokeby, Risdon Vale, Mornington).
+  The very long trips are mostly in outer areas that SEIFA ranks as less
+  disadvantaged (South Arm, Kettering, Kingston Beach, Cambridge). Car
+  ownership, which would sharpen this, is not in the analysis yet.
+- **Bridgewater - Gagebrook is the clear outlier:** the most disadvantaged
+  SA2 in the study area by a wide margin (decile 1),
+  with a median of 58 minutes and only 61.9% of
+  its 8,184 residents within an hour. It is where poor public
+  transport and disadvantage coincide, and the strongest case in this
+  analysis for service attention.
+
+Caveats: 2021 Census and SEIFA against a 2026 timetable; population shared
+equally across addresses in a mesh block (business and vacant addresses
+take a share); IRSD describes areas, not individuals; and the times still
+assume no wait at the first stop, which flatters the outer suburbs where
+service is sparse.
+
 ## Friction log
 
 Ordered by how much each one matters for UA work beyond Hobart.
@@ -160,7 +242,8 @@ Ordered by how much each one matters for UA work beyond Hobart.
    found in a third-party GitHub repository (`devdennish/TransitTasmania`).
    That copy has already expired. A dated GTFS snapshot archive alongside
    the LIST mirror on source.coop would make every result reproducible.
-6. **No population or disadvantage data yet.** ABS census and SEIFA were
+6. **No population or disadvantage data yet** (resolved November 2026: 2021
+   mesh block counts and SEIFA 2021, see "People and disadvantage" above). ABS census and SEIFA were
    unreachable from the sandbox, so addresses stand in for people. Mesh
    block population and SEIFA by SA1 are the next inputs; they turn "share
    of addresses" into "people, by disadvantage", which is the claim worth
