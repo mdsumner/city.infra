@@ -72,11 +72,11 @@ Issue counts are from the GitHub search API on 2026-11-06.
   `to` / `d` edge form, with `.feature` carrying the LIST segment id. This
   would be the first non-OSM route into the UA stack.
 - **Cycles for neighbourhoods.** `neighbourhoods::network_cycles()` finds
-  minimal cycles with its own C++ walk. wkpool already has `find_cycles()`,
-  `classify_cycles()`, `find_neighbours()` and `find_shared_edges()`. Worth
-  comparing outputs and timings on the same graph; if they agree, wkpool
-  could be a shared, tested dependency rather than parallel code *(to
-  verify)*.
+  minimal cycles with its own C++ walk. Checked 2026-11-08: wkpool's
+  `find_cycles()` recovers polygon rings, it does not find the faces of a
+  line network, so the contribution is to add face enumeration to wkpool
+  alongside its existing `find_neighbours()`, `find_shared_edges()` and
+  `classify_cycles()`. Draft: [wkpool-neighbourhoods.md](wkpool-neighbourhoods.md).
 - **Adjacency for aggregation.** Edge and vertex neighbour relations between
   social polygons or between neighbourhood cycles are what LTN aggregation and
   spatialcluster contiguity both need.
