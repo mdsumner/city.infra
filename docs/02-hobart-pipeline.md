@@ -40,7 +40,12 @@ These are the first-run figures. They are slightly affected by a bug found
 later (friction point 8); corrected August figures and a comparison with
 November are in the next section.
 
-![Walk + public transport time to the Royal Hobart Hospital](02-hobart/rhh-access-map.png)
+![Walk + public transport time to the Royal Hobart Hospital, Tuesday 4 August 2026 (corrected run)](02-hobart/2026-08-04-v20/rhh-access-map.png)
+
+Map: the corrected August run (see below); the first-run map is kept at
+[02-hobart/rhh-access-map.png](02-hobart/rhh-access-map.png). Each dot is
+an address; the main panel covers the urban area from Brighton to Margate,
+and the overview shows the whole study area down to the Huon Valley.
 
 Share of addresses that can reach the hospital within a given time
 (percent), and the median time in minutes:

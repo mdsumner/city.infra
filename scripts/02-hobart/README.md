@@ -24,6 +24,24 @@ The analysis day is the first Tuesday on or after the later of today and the
 feed's start date with no `calendar_dates` removals; set `GTFS_DATE=YYYYMMDD`
 to fix it (the first run used `GTFS_DATE=20260804`).
 
+For the published map with geographic context (land and water, LGA
+boundaries, suburb names, overview inset, scale), fetch the theLIST context
+layers once and run `04_map_access.R` on the outputs:
+
+```sh
+B=https://data.source.coop/mdsumner/thelist-opendata/geoparquet
+mkdir -p context
+curl -o context/lga.parquet $B/list_local_govt_areas/statewide/list_local_govt_areas_statewide.parquet
+for l in hobart glenorchy clarence kingborough brighton derwent_valley huon_valley sorell; do
+  curl -o context/loc_$l.parquet $B/list_locality_postcode/$l/list_locality_postcode_$l.parquet
+done
+Rscript 04_map_access.R out/rhh-access-addresses.csv.gz context/ out/run.json out/rhh-access-map.png
+```
+
+`04_map_access.R` needs arrow, sf, data.table and jsonlite. Travel time uses a
+single-hue blue ramp (light is quick, dark is slow) checked as an ordinal
+palette; water is grey so it is not read as data.
+
 `03_access_rhh.R` needs dodgr, gtfsrouter, m4ra, data.table, sf and
 geodist. It takes about 30 seconds on 4 cores. Set `USE_M4RA=1` to build the
 stop-to-stop matrix with `m4ra_gtfs_traveltimes()` instead of
