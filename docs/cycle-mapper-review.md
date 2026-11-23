@@ -111,3 +111,5 @@ Issues, roughly by impact:
    graph walk in JS, with localStorage and CSV import and export.
 4. Keep the R app working against the new S3 layer in the meantime, since
    that is a one-line change of `NETWORK_URL` plus the CRS fix.
+   **Done 2026-11-23:** the app reads
+   `geoparquet/list_transport_segments/statewide/` from thelist-opendata.

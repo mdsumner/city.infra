@@ -4,7 +4,12 @@ library(dplyr)
 library(wk)
 
 # --- Configuration ---
-NETWORK_URL <- "https://github.com/mdsumner/splh.transport/releases/download/latest/LIST_TRANSPORT_SEGMENTS.parquet"
+# LIST_TRANSPORT_SEGMENTS statewide from the thelist-opendata mirror on
+# source.coop: one row per TRANSEG_ID (pieces clipped at LGA boundaries are
+# rejoined), native EPSG:28355, GeoParquet geometry column `geometry`.
+# See data/README.md for provenance.
+NETWORK_URL <- "https://data.source.coop/mdsumner/thelist-opendata/geoparquet/list_transport_segments/statewide/list_transport_segments_statewide.parquet"
+NETWORK_COLUMNS <- c("TRANSEG_ID", "PRI_NAME", "SEC_NAME", "COMP_LEN", "geometry")
 HOBART_CENTER <- c(-42.88, 147.33)
 MAPPINGS_FILE <- "cycle_mappings.csv"
 
@@ -53,10 +58,11 @@ save_mappings <- function(mappings, file = MAPPINGS_FILE) {
 # --- Data loading ---
 load_network <- function(url = NETWORK_URL) {
   message("Loading transport network...")
-  segments <- arrow::read_parquet(url)
+  segments <- arrow::read_parquet(url, col_select = dplyr::all_of(NETWORK_COLUMNS))
   
   # Convert WKB to wk, check CRS by coordinate range
-  segments$geom <- wk::wkb(segments$SHAPE)
+  segments$geom <- wk::wkb(unclass(segments$geometry))
+  segments$geometry <- NULL
   
   # Get centroids for quick spatial filtering
   coords <- wk::wk_coords(segments$geom)

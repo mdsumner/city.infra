@@ -39,8 +39,9 @@ See [PLAN.md](PLAN.md) for the current plan and status.
   track metrics (distance, bearing, turn, speed, interpolation)
 - [thelist-opendata](https://github.com/hypertidy/thelist-opendata):
   cloud-native mirror of LIST open data, Tasmania
-- [splh.transport releases](https://github.com/mdsumner/splh.transport/releases/):
-  Parquet cache of statewide Tasmania transport segments used by the app
+- [thelist-opendata on source.coop](https://source.coop/mdsumner/thelist-opendata):
+  the LIST mirror; the R app reads its statewide transport segments
+  (see [data/README.md](data/README.md))
 
 ## Website
 
