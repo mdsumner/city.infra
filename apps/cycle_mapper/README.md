@@ -2,9 +2,11 @@
 
 Map cycle infrastructure descriptions to theLIST Tasmania transport network.
 
-There is a Parquet cache of the statewide Tasmania street arcs cached as a release artefact (a high quality network of cleanly noded linestrings).
+The app reads the statewide LIST transport segments (a high quality network of cleanly noded linestrings) from the thelist-opendata mirror on source.coop:
 
-https://github.com/mdsumner/splh.transport/releases/
+https://data.source.coop/mdsumner/thelist-opendata/geoparquet/list_transport_segments/statewide/list_transport_segments_statewide.parquet
+
+Provenance and known gaps are in [data/README.md](../../data/README.md).
 
 This is accessed via a Shiny app to pick individual elements for arbitrary grouping, can use a tiny street name syntax to
 start or explore a search based on between-intersection definitions.

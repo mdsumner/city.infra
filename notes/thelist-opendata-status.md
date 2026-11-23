@@ -78,6 +78,13 @@ GitHub repo hypertidy/thelist-opendata.
    Bridge edge does not reach the Hobart side
    ([docs/02-hobart-pipeline.md](../docs/02-hobart-pipeline.md), friction
    point 9; [docs/wkpool-neighbourhoods.md](../docs/wkpool-neighbourhoods.md)).
+   **Update 2026-11-23:** thelist-opendata now builds
+   `list_transport_segments_statewide.parquet` (2026-11-20) with the LGA
+   pieces rejoined, which brings the count of segments more than 50 m short
+   of `COMP_LEN` from 609 down to 14. The over-water parts are still absent
+   (same lengths as the table above, plus the Batman Bridge `6111927`), since
+   LIST ships no statewide transport zip to take them from. The R app now
+   reads this file.
    Fix in the web-layer build: take each `TRANSEG_ID`'s full geometry once
    from the statewide source rather than combining per-LGA clips, and add a
    check of geometry length against `COMP_LEN`.
